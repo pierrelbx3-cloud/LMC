@@ -1,17 +1,8 @@
 /* src/components/Button.module.css */
 
-.primaryButton {
-  /* Vos styles CSS ici */
-  background-color: #007bff;
+/* 🛑 VÉRIFIEZ ICI : Le nom doit correspondre ! */
+.primaryButton { 
+  background-color: blue; /* Utilisez des styles très voyants pour tester */
+  padding: 15px;
   color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s;
-}
-
-.primaryButton:hover {
-  background-color: #0056b3;
 }

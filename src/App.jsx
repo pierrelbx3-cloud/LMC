@@ -1,16 +1,10 @@
-// src/App.jsx
-import Button from './components/Button';
-// Assurez-vous d'avoir effacé les directives @tailwind de votre index.css ou app.css si vous les aviez mises.
+import React from 'react';
 
 function App() {
   return (
-    <div className="App">
-      <h1>Mon Application React</h1>
-      
-      {/* Utilisation du nouveau composant stylisé */}
-      <Button>Cliquez-moi !</Button> 
-      
-      <p>Nous continuons sans framework CSS.</p>
+    // Utilisez un style très simple et visible
+    <div style={{ padding: '20px', backgroundColor: 'yellow' }}>
+      <h1>✅ J'AFFICHE QUELQUE CHOSE !</h1>
     </div>
   );
 }
