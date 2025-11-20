@@ -1,27 +1,16 @@
-import './App.css';
+// src/App.jsx
+import Button from './components/Button';
+// Assurez-vous d'avoir effacé les directives @tailwind de votre index.css ou app.css si vous les aviez mises.
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src="Octocat.png" className="App-logo" alt="logo" />
-        <p>
-          GitHub Codespces <span className="heart">♥️</span> React
-        </p>
-        <p className="small">
-          Edit <code>src/App.jsx</code> and save to reload.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </p>
-      </header>
+      <h1>Mon Application React</h1>
+      
+      {/* Utilisation du nouveau composant stylisé */}
+      <Button>Cliquez-moi !</Button> 
+      
+      <p>Nous continuons sans framework CSS.</p>
     </div>
   );
 }
