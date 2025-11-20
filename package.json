@@ -42,9 +42,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.7.0",
-    "autoprefixer": "^10.4.22",
     "jsdom": "^26.1.0",
-    "tailwindcss": "^4.1.17",
     "vite": "^6.3.6",
     "vitest": "^3.0.7"
   }
