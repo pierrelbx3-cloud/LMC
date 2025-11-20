@@ -1,0 +1,1 @@
+export default function Agenda() { return <h2>Mon Agenda de Réservations</h2>; }

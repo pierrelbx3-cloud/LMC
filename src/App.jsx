@@ -1,32 +1,67 @@
-// src/App.jsx
-
 import React from 'react';
-// Importations de React Router DOM
-import { Routes, Route, Link } from 'react-router-dom'; 
+import { Routes, Route } from 'react-router-dom';
+// Assurez-vous d'avoir bien créé ce composant dans src/components/
+import Header from './components/Header'; 
+// Assurez-vous d'avoir bien créé ce composant dans src/components/
+import ProtectedRoute from './components/ProtectedRoute'; 
 
-// Importations de vos pages (Assurez-vous que ces chemins sont corrects)
-import Home from './pages/Home'; 
-import About from './pages/About'; 
+// Importation des Pages de Présentation (Front Office)
+import Home from './pages/Home';
+import Services from './pages/Services';
+import About from './pages/About';
+import Contact from './pages/Contact';
+
+// Importation des Pages Client
+import Search from './pages/Search'; 
+
+// Importation des Pages Professionnelles (Back Office)
+import Login from './pages/Login';
+import Agenda from './pages/pro/Agenda';      
+import HangarUpdate from './pages/pro/HangarUpdate';
+
 
 function App() {
   return (
-    <div className="App">
-      {/* 🧭 LES LIENS DE NAVIGATION */}
-      <nav style={{ marginBottom: '20px' }}>
-        <Link to="/">Accueil</Link> | {' '}
-        <Link to="/about">À Propos</Link>
-      </nav>
+    // 'd-flex flex-column min-vh-100' assure que le footer reste toujours en bas de l'écran (layout flexible)
+    <div className="App d-flex flex-column min-vh-100">
+      <Header /> {/* Le Header est visible sur toutes les pages */}
       
-      <h1>Mon Application avec React Router</h1> 
+      {/* Le conteneur main prend l'espace restant et centre le contenu */}
+      <main className="container flex-grow-1 py-4">
+        <Routes>
+          {/* --- ROUTES PUBLIQUES et CLIENTS (Pas de login) --- */}
+          <Route path="/" element={<Home />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/search" element={<Search />} /> 
+          <Route path="/login" element={<Login />} />
+
+          {/* --- ROUTES PROTÉGÉES (PROFESSIONNELS) --- */}
+          {/* Si non connecté, ProtectedRoute redirige vers /login */}
+          <Route path="/pro/agenda" element={
+            <ProtectedRoute>
+              <Agenda />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/pro/hangar" element={
+            <ProtectedRoute>
+              <HangarUpdate />
+            </ProtectedRoute>
+          } />
+
+          {/* Route 404 (Attrape toutes les autres routes) */}
+          <Route path="*" element={<h2 className="text-center mt-5">404 - Page Introuvable</h2>} />
+        </Routes>
+      </main>
       
-      {/* ✅ DEBUT DU CONTENEUR DE ROUTES */}
-      <Routes>
-        {/* Définition des routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-      </Routes> 
-      {/* 🛑 FIN DU CONTENEUR DE ROUTES (La balise fermante était manquante/incorrecte) */}
-      
+      {/* Footer simple Bootstrap */}
+      <footer className="bg-dark text-white text-center py-3 mt-auto">
+        <div className="container">
+          <p className="mb-0 small">&copy; 2025 AeroMaintenance - Tous droits réservés.</p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,0 +1,1 @@
+export default function HangarUpdate() { return <h2>Mise à jour des informations du Hangar</h2>; }
