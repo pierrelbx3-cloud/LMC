@@ -1,8 +1,0 @@
-/* src/components/Button.module.css */
-
-/* 🛑 VÉRIFIEZ ICI : Le nom doit correspondre ! */
-.primaryButton { 
-  background-color: blue; /* Utilisez des styles très voyants pour tester */
-  padding: 15px;
-  color: white;
-}

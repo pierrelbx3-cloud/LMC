@@ -1,18 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom'; 
-import './index.css';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext'; // Le contexte que nous avons défini
 import App from './App';
-import reportWebVitals from './reportWebVitals';
+import './index.css'; 
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
+// L'application est enveloppée par le Contexte d'Authentification 
+// pour que toutes les pages aient accès à l'état de l'utilisateur.
 root.render(
   <React.StrictMode>
-    {/* 👈 ENVELOPPER L'APPLICATION DANS LE ROUTEUR */}
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </AuthProvider>
   </React.StrictMode>
 );
-
-reportWebVitals();
