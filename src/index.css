@@ -4,10 +4,68 @@ body {
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -moz-osx-font-smoothing: bleu;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+:root {
+  /* Définition des variables de couleurs */
+  --color-primary: #1A233A;      /* Bleu Nuit */
+  --color-secondary: #4FC3F7;    /* Bleu Ciel */
+  --color-accent: #FF7043;       /* Terre Cuite */
+  --color-light-bg: #f4f7f9;    /* Un gris très léger pour le fond */
+}
+
+.custom-navbar-style {
+  /* La couleur de fond que vous avez choisie (exemple : bleu marine foncé) */
+  background-color: var(--color-primary) !important;
+  border-bottom: 3px solid #white; 
+}
+
+/* Cibler spécifiquement les liens 'nav-link' à l'intérieur de la navbar personnalisée */
+/* Cela s'applique à '🔍 Trouver un Hangar', 'Services', 'Mon Agenda', etc. */
+.custom-navbar-style .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important; /* Texte clair pour être visible sur le bleu */
+}
+
+/* Rendre le texte des liens blancs/clairs au survol */
+.custom-navbar-style .navbar-nav .nav-link:hover {
+    color: gray !important; /* Blanc pur au survol */
+}
+
+/* Assurer que l'icône du bouton hamburger est blanche */
+/* Ceci est géré par la classe navbar-dark, mais c'est une bonne pratique de vérifier */
+.custom-navbar-style .navbar-toggler-icon {
+  filter: brightness(0) invert(1); 
+}
+.custom-footer-style {
+  /* Votre bleu spécifique (exemple : un bleu royal) */
+  background-color: var(--color-primary) !important; 
+  /* Si vous voulez une ombre ou une bordure, ajoutez-la ici */
+}
+
+.transition-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Rend l'animation fluide */
+}
+
+.transition-hover:hover {
+  transform: translateY(-5px); /* Déplace la carte de 5px vers le haut au survol */
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important; /* Ombre plus prononcée au survol */
+}
+
+.btn-accent-pro {
+  /* Définit le fond et la bordure en Terre Cuite */
+  background-color: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+  /* Assure que le texte reste blanc pour le contraste */
+  color: white !important;
+}
+
+/* Optionnel : Rendre le survol un peu plus foncé */
+.btn-accent-pro:hover {
+  filter: brightness(0.9);
 }

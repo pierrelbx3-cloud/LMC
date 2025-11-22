@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header'; 
 // Assurez-vous d'avoir bien créé ce composant dans src/components/
 import ProtectedRoute from './components/ProtectedRoute'; 
+import Footer from './components/Footer';
 
 // Importation des Pages de Présentation (Front Office)
 import Home from './pages/Home';
@@ -54,14 +55,8 @@ function App() {
           {/* Route 404 (Attrape toutes les autres routes) */}
           <Route path="*" element={<h2 className="text-center mt-5">404 - Page Introuvable</h2>} />
         </Routes>
-      </main>
-      
-      {/* Footer simple Bootstrap */}
-      <footer className="bg-dark text-white text-center py-3 mt-auto">
-        <div className="container">
-          <p className="mb-0 small">&copy; 2025 AeroMaintenance - Tous droits réservés.</p>
-        </div>
-      </footer>
+      </main> 
+      <Footer/>
     </div>
   );
 }

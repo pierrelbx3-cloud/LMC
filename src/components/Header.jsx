@@ -1,50 +1,38 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 export default function Header() {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/'); // Retour accueil après déconnexion
-  };
-
+  /* NOTE : Les imports 'useNavigate' et 'useAuth' ne sont plus nécessaires 
+     puisque la logique de déconnexion/connexion a été retirée.
+  */
+  
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
+    <nav className="navbar navbar-expand-lg navbar-dark custom-navbar-style shadow-sm mb-4">
       <div className="container">
-        <Link className="navbar-brand fw-bold text-primary" to="/">AeroMaintenance</Link>
+        {/* Marque LMC */}
+        <Link className="navbar-brand fw-bold text-white" to="/">Let Me Check</Link>
         
+        {/* Bouton Hamburger */}
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span className="navbar-toggler-icon"></span>
         </button>
 
+        {/* Contenu du Menu */}
         <div className="collapse navbar-collapse" id="navbarNav">
+          {/* Liens Publics (à gauche) */}
           <ul className="navbar-nav me-auto">
-            {/* Liens Publics */}
-            <li className="nav-item"><Link className="nav-link" to="/">Accueil</Link></li>
-            <li className="nav-item"><Link className="nav-link" to="/search">🔍 Trouver un Hangar</Link></li>
+            <li className="nav-item"><Link className="nav-link" to="/search">🔍 Find a MRO</Link></li>
             <li className="nav-item"><Link className="nav-link" to="/services">Services</Link></li>
+            <li className="nav-item"><Link className="nav-link" to="/contact">Contact</Link></li>
           </ul>
 
+          {/* Lien Espace Pro (à droite) */}
           <div className="d-flex">
-            {user ? (
-              // Menu si Connecté (Pro)
-              <ul className="navbar-nav">
-                <li className="nav-item"><Link className="nav-link fw-bold" to="/pro/agenda">Mon Agenda</Link></li>
-                <li className="nav-item"><Link className="nav-link" to="/pro/hangar">Mon Hangar</Link></li>
-                <li className="nav-item">
-                  <button onClick={handleLogout} className="btn btn-outline-danger btn-sm ms-2">Déconnexion</button>
-                </li>
-              </ul>
-            ) : (
-              // Menu si Invité
-              <ul className="navbar-nav">
-                <li className="nav-item"><Link className="nav-link" to="/contact">Contact</Link></li>
-                <li className="nav-item"><Link className="btn btn-primary btn-sm ms-2 text-white" to="/login">Espace Pro</Link></li>
-              </ul>
-            )}
+            <ul className="navbar-nav">
+              <li className="nav-item">
+                <Link className="btn btn-accent-pro btn-sm ms-2 text-white" to="/login">Espace Pro</Link>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
