@@ -16,7 +16,9 @@ import Contact from './pages/Contact';
 import Search from './pages/Search'; 
 
 // Importation des Pages Professionnelles (Back Office)
-import Login from './pages/Login';
+// REMPLACÉ : On importe le Dashboard à la place du Login de la page
+// NOUVEAU : Importation du composant de tableau de bord
+import ProDashboard from './pages/pro/ProDashboard'; 
 import Agenda from './pages/pro/Agenda';      
 import HangarUpdate from './pages/pro/HangarUpdate';
 
@@ -30,32 +32,33 @@ function App() {
       {/* Le conteneur main prend l'espace restant et centre le contenu */}
       <main className="container flex-grow-1 py-4">
         <Routes>
-          {/* --- ROUTES PUBLIQUES et CLIENTS (Pas de login) --- */}
+          {/* --- ROUTES PUBLIQUES et CLIENTS --- */}
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<Services />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/search" element={<Search />} /> 
-          <Route path="/login" element={<Login />} />
+          
+          {/* MODIFICATION : La route /login affiche maintenant directement le Dashboard Pro 
+             (en attendant la réactivation du login) */}
+          <Route path="/login" element={<ProDashboard />} />
 
           {/* --- ROUTES PROTÉGÉES (PROFESSIONNELS) --- */}
-          {/* Si non connecté, ProtectedRoute redirige vers /login */}
-          <Route path="/pro/agenda" element={
-            <ProtectedRoute>
-              <Agenda />
-            </ProtectedRoute>
-          } />
+          {/* NOTE : La protection a été retirée temporairement pour permettre l'accès 
+             aux pages de gestion via le Dashboard tant que le Login est inactif. */}
           
-          <Route path="/pro/hangar" element={
-            <ProtectedRoute>
-              <HangarUpdate />
-            </ProtectedRoute>
-          } />
+          {/* Ancienne route /pro/agenda (maintenant accessible directement) */}
+          <Route path="/pro/agenda" element={<Agenda />} />
+          
+          {/* Ancienne route /pro/hangar (maintenant accessible directement) */}
+          <Route path="/pro/hangar" element={<HangarUpdate />} />
 
           {/* Route 404 (Attrape toutes les autres routes) */}
           <Route path="*" element={<h2 className="text-center mt-5">404 - Page Introuvable</h2>} />
         </Routes>
       </main> 
+      
+      {/* CORRECTION : Utilisation de la balise du composant React Footer (avec la majuscule) */}
       <Footer/>
     </div>
   );
