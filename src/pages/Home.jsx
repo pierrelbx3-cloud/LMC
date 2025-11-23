@@ -8,16 +8,16 @@ export default function Home() {
   // Bootstrap et les surcharger dans le CSS si nécessaire.
 
   return (
-    <div className="container py-5">
+    <div className="container py-6">
       
       {/* 🌌 SECTION HERO (Bannière principale) - Fond Bleu Nuit, Bouton Terre Cuite */}
       <div 
-        className="p-5 mb-5 rounded-4 shadow-lg text-white text-center"
+        className="p-3 mb-5 rounded-4 shadow-lg text-white text-center"
         // Style en ligne TEMPORAIRE pour tester le Bleu Nuit directement sur le Hero
         style={{ backgroundColor: 'var(--color-primary, #1A237E)' }} 
       >
-        <div className="container-fluid py-5">
-          <h1 className="display-4 fw-bolder">Maintenance Aéronautique, Réinventée.</h1>
+        <div className="container-fluid py-6">
+          <h1 className="display-6 fw-bolder">Maintenance Aéronautique, Réinventée.</h1>
           <p className="col-md-9 fs-5 mx-auto opacity-75 mt-3">
             La première plateforme de mise en relation entre propriétaires d'avions et **hangars certifiés**. 
             Réservez votre emplacement de maintenance en quelques clics.
