@@ -1,3 +1,5 @@
+// Header.jsx
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -7,7 +9,8 @@ export default function Header() {
   */
   
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark custom-navbar-style shadow-sm mb-4">
+    // 🚨 MODIFICATION ICI : AJOUT de la classe "sticky-top" 🚨
+    <nav className="navbar navbar-expand-lg navbar-dark custom-navbar-style shadow-sm sticky-top">
       <div className="container">
         {/* Marque LMC */}
         <Link className="navbar-brand fw-bold text-white" to="/">Let Me Check</Link>

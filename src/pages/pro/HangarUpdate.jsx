@@ -77,38 +77,57 @@ const RelationEditor = ({ title, options, currentIds, onUpdate, idKey, nameKey, 
     );
 };
 
-
 // =========================================================
-// NOUVEAU Composant: Éditeur d'Avions (avec Recherche/Filtre)
+// Composant: Éditeur d'Avions (Filtre par Catégorie > TC Holder > Modèle)
 // =========================================================
 const HangarAvionEditor = ({ title, options, currentIds, onUpdate, idKey, nameKey, junctionTable, hangarId }) => {
     const [selectedIds, setSelectedIds] = useState(currentIds);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedOptionId, setSelectedOptionId] = useState('');
+    
+    // NOUVEAUX ÉTATS POUR LE FILTRAGE
+    const [selectedCategory, setSelectedCategory] = useState(''); // NOUVEAU: Product Category
+    const [selectedTCHolder, setSelectedTCHolder] = useState(''); // TC Holder (dépend de Category)
+    const [selectedModelId, setSelectedModelId] = useState(''); // Modèle (dépend de TC Holder)
 
     useEffect(() => {
         setSelectedIds(currentIds);
-        setSelectedOptionId(''); // Réinitialiser l'option sélectionnée lors du changement de hangar
+        // Ne réinitialisez pas les filtres ici, car ils doivent persister
+        // setSelectedCategory(''); 
+        // setSelectedTCHolder(''); 
+        // setSelectedModelId(''); 
     }, [currentIds]);
 
-    // Filtrer la liste des options disponibles (qui ne sont pas déjà sélectionnées)
-    const availableOptions = options.filter(option => 
-        !selectedIds.includes(option[idKey]) && 
-        option[nameKey].toLowerCase().includes(searchTerm.toLowerCase())
+    // 1. Extraction des Catégories uniques
+    const uniqueCategories = Array.from(new Set(options.map(option => option.product_category))).sort();
+
+    // 2. Filtrage des TC Holders basé sur la Catégorie sélectionnée
+    const uniqueTCHolders = Array.from(new Set(
+        options
+            .filter(option => selectedCategory === '' || option.product_category === selectedCategory)
+            .map(option => option.tc_holder)
+    )).sort();
+
+    // 3. Filtrage des Modèles basé sur le TC Holder sélectionné
+    const filteredModels = options.filter(option => 
+        !selectedIds.includes(option[idKey]) && // Modèles non encore ajoutés
+        (selectedTCHolder === '' || option.tc_holder === selectedTCHolder)
     );
 
     // Options sélectionnées pour l'affichage des tags
     const selectedOptions = options.filter(option => selectedIds.includes(option[idKey]));
 
     const handleAdd = () => {
-        if (!selectedOptionId) return;
+        if (!selectedModelId) return;
         
         // S'assurer que l'ID n'est pas déjà dans la liste
-        if (!selectedIds.includes(parseInt(selectedOptionId))) {
-            const newIds = [...selectedIds, parseInt(selectedOptionId)];
+        if (!selectedIds.includes(parseInt(selectedModelId))) {
+            const newIds = [...selectedIds, parseInt(selectedModelId)];
             setSelectedIds(newIds);
             onUpdate(junctionTable, newIds);
-            setSearchTerm(''); // Réinitialiser la recherche
+            
+            // 🚨 CORRECTION ICI : Ne réinitialiser QUE l'ID du modèle sélectionné 🚨
+            // setSelectedCategory(''); // RETIRÉ
+            // setSelectedTCHolder(''); // RETIRÉ
+            setSelectedModelId(''); // Seul le champ Modèle est réinitialisé après l'ajout.
         }
     };
 
@@ -122,40 +141,79 @@ const HangarAvionEditor = ({ title, options, currentIds, onUpdate, idKey, nameKe
         <div className="mb-4 p-4 border rounded-3 shadow-sm">
             <h4 className="mb-3" style={{ color: 'var(--color-primary, #1A237E)' }}>{title}</h4>
             
-            {/* Champ de Recherche et Ajout */}
-            <div className="input-group mb-3">
-                <input 
-                    type="text" 
-                    className="form-control" 
-                    placeholder="Rechercher par Modèle ou TC Holder..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setSelectedOptionId(''); // Désélectionner l'option lors de la saisie
-                    }}
-                />
+            {/* --- NOUVELLE ZONE DE SÉLECTION EN CASCADE --- */}
+            <div className="input-group mb-3 d-flex flex-column gap-2">
+                <div className="d-flex gap-2">
+                    {/* Menu Déroulant 1 : Product Category (Nouveau) */}
+                    <select 
+                        className="form-select" 
+                        value={selectedCategory}
+                        onChange={(e) => {
+                            setSelectedCategory(e.target.value);
+                            setSelectedTCHolder(''); // Réinitialiser les niveaux suivants
+                            setSelectedModelId('');
+                        }}
+                    >
+                        <option value="">-- Catégorie de Produit --</option>
+                        {uniqueCategories.map((category) => (
+                            <option key={category} value={category}>
+                                {category}
+                            </option>
+                        ))}
+                    </select>
                 
-                <select 
-                    className="form-select" 
-                    value={selectedOptionId}
-                    onChange={(e) => setSelectedOptionId(e.target.value)}
-                    style={{ maxWidth: '40%' }} // Limiter la largeur du select
-                >
-                    <option value="" disabled>{availableOptions.length > 0 ? 'Sélectionner un modèle...' : 'Aucun modèle trouvé...'}</option>
-                    {availableOptions.slice(0, 50).map((option) => ( // Limiter l'affichage à 50
-                        <option key={option[idKey]} value={option[idKey]}>
-                            {option[nameKey]}
+                    {/* Menu Déroulant 2 : TC Holder (Filtré par Catégorie) */}
+                    <select 
+                        className="form-select" 
+                        value={selectedTCHolder}
+                        onChange={(e) => {
+                            setSelectedTCHolder(e.target.value);
+                            setSelectedModelId(''); // Réinitialiser le Modèle
+                        }}
+                        disabled={!selectedCategory}
+                    >
+                        <option value="">
+                            {selectedCategory ? `-- Sélectionnez le TC Holder --` : `Sélectionnez d’abord une Catégorie`}
                         </option>
-                    ))}
-                </select>
-                <button 
-                    className="btn btn-success" 
-                    type="button" 
-                    onClick={handleAdd}
-                    disabled={!selectedOptionId}
-                >
-                    Ajouter
-                </button>
+                        {uniqueTCHolders.map((holder) => (
+                            <option key={holder} value={holder}>
+                                {holder}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                
+                <div className="d-flex gap-2">
+                    {/* Menu Déroulant 3 : Modèle d'Avion Filtré */}
+                    <select 
+                        className="form-select" 
+                        value={selectedModelId}
+                        onChange={(e) => setSelectedModelId(e.target.value)}
+                        disabled={!selectedTCHolder}
+                    >
+                        <option value="" disabled>
+                            {selectedTCHolder ? 
+                                (filteredModels.length > 0 ? 'Sélectionner un modèle...' : 'Aucun modèle disponible.') : 
+                                'Sélectionnez d’abord un TC Holder'
+                            }
+                        </option>
+                        {filteredModels.map((option) => (
+                            <option key={option[idKey]} value={option[idKey]}>
+                                {option.model_avion}
+                            </option>
+                        ))}
+                    </select>
+
+                    <button 
+                        className="btn btn-success" 
+                        type="button" 
+                        onClick={handleAdd}
+                        disabled={!selectedModelId}
+                        style={{ minWidth: '100px' }}
+                    >
+                        Ajouter
+                    </button>
+                </div>
             </div>
             
             {/* Tags Actuellement Sélectionnés */}
@@ -177,18 +235,15 @@ const HangarAvionEditor = ({ title, options, currentIds, onUpdate, idKey, nameKe
                 )}
             </div>
             
-            <p className="mt-3 small text-muted">Utilisez la recherche pour ajouter un modèle. Cliquez sur un tag vert pour le retirer.</p>
+            <p className="mt-3 small text-muted">Sélectionnez la catégorie, le TC Holder et le modèle pour l'ajouter. Cliquez sur un tag vert pour le retirer.</p>
         </div>
     );
 };
-
 
 // =========================================================
 // Composant Principal: HangarUpdate
 // =========================================================
 export default function HangarUpdate() {
-    // ... (Reste de votre composant HangarUpdate inchangé: useState, useEffect, handleSimpleFieldChange, handleSubmit, etc.)
-
     // --- MISE À JOUR DES DONNÉES SIMPLES DU FORMULAIRE ---
     const handleSimpleFieldChange = (e) => {
         setHangarData({ ...hangarData, [e.target.name]: e.target.value });
@@ -273,7 +328,7 @@ export default function HangarUpdate() {
     const [allServices, setAllServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [updateStatus, setUpdateStatus] = useState('');
-    // (J'ai conservé le useEffect pour le chargement initial ici pour la complétude)
+    
     // --- 1. CHARGEMENT INITIAL (Hangars, Types Avions, Services) ---
     useEffect(() => {
         async function fetchInitialData() {
@@ -284,15 +339,17 @@ export default function HangarUpdate() {
                 const { data: hData, error: hError } = await supabase.from('hangars').select('id_hangar, nom_hangar');
                 if (hError) throw hError;
                 
-                // 2. Charger tous les types d'avions disponibles
-                const { data: tData, error: tError } = await supabase.from('type_avion').select('id_type, model_avion, tc_holder');
+                // 2. Charger tous les types d'avions disponibles (utilisé par HangarAvionEditor)
+                const { data: tData, error: tError } = await supabase
+                    .from('type_avion')
+                    .select('id_type, model_avion, tc_holder, product_category'); // 🚨 AJOUT DE product_category
                 if (tError) throw tError;
                 
                 // 3. Charger tous les services disponibles
                 const { data: sData, error: sError } = await supabase.from('services').select('id_service, description');
                 if (sError) throw sError;
 
-                // On combine le Modèle et le TC Holder pour l'affichage de l'avion
+                // On ajoute displayName pour le composant RelationEditor si besoin, sinon on utilise les propriétés brutes.
                 const mappedAvions = tData.map(t => ({ 
                     ...t, 
                     displayName: `${t.model_avion} (${t.tc_holder})` 
@@ -303,7 +360,7 @@ export default function HangarUpdate() {
                 setAllServices(sData);
 
                 // Sélectionner le premier hangar par défaut si existant
-                if (hData.length > 0) {
+                if (hData.length > 0 && !selectedHangarId) {
                     setSelectedHangarId(hData[0].id_hangar);
                 }
             } catch (error) {
@@ -313,9 +370,9 @@ export default function HangarUpdate() {
             }
         }
         fetchInitialData();
-    }, []);
+    }, [selectedHangarId]); // Dépendance ajoutée pour le selectedHangarId dans le if
 
-    // (J'ai conservé le useEffect pour les détails du hangar ici pour la complétude)
+    
     // --- 2. CHARGEMENT DES DÉTAILS DU HANGAR SÉLECTIONNÉ ---
     useEffect(() => {
         if (!selectedHangarId) return;
@@ -332,12 +389,12 @@ export default function HangarUpdate() {
                     .single();
                 if (dError) throw dError;
 
-                // Modèles d'avions associés (Jonction hangar_avion)
-                const { data: aData, error: aError } = await supabase
+                // 🚨 CORRECTION 1: Chargement des IDs des avions associés (table de jonction)
+               const { data: aRelationsData, error: aRelationsError } = await supabase
                     .from('hangar_avion')
-                    .select('id_type')
+                    .select('id_type') // On veut juste l'ID du type d'avion
                     .eq('id_hangar', selectedHangarId);
-                if (aError) throw aError;
+                if (aRelationsError) throw aRelationsError;
                 
                 // Services associés (Jonction hangar_service)
                 const { data: sData, error: sError } = await supabase
@@ -348,7 +405,8 @@ export default function HangarUpdate() {
                 
                 setHangarData({
                     ...dData,
-                    avion_ids: aData.map(item => item.id_type),
+                    // Utiliser les IDs de la table de jonction
+                    avion_ids: aRelationsData.map(item => item.id_type),
                     service_ids: sData.map(item => item.id_service),
                 });
             } catch (error) {
