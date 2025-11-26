@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const BACKGROUND_IMAGE_URL = '/src/assets/background.png'; 
+const BACKGROUND_IMAGE_URL = '/public/assets/background.png'; 
 // Assurez-vous d'avoir ces images pour le carrousel, ou remplacez-les par du texte.
-const CAROUSEL_IMAGE_1 = '/src/assets/home1.png';
-const CAROUSEL_IMAGE_2 = '/src/assets/home2.png';
-const CAROUSEL_IMAGE_3 = '/src/assets/home3.png';
+const CAROUSEL_IMAGE_1 = '/public/assets/home1.png';
+const CAROUSEL_IMAGE_2 = '/public/assets/home2.png';
+const CAROUSEL_IMAGE_3 = '/public/assets/home3.png';
 
 export default function Home() {
 
