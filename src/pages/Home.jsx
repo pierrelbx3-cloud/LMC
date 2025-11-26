@@ -145,7 +145,7 @@ export default function Home() {
                 <span className="fs-1 mb-3 d-block" style={{ color: 'var(--color-secondary)' }}>
                   <i className="fas fa-bolt"></i>
                 </span>
-                <h3 className="card-title fw-bolder mb-3">Disponibilités Instantanées</h3>
+                <h3 className="card-title fw-bolder mb-3">⚡️ Disponibilités Instantanées</h3>
                 <p className="card-text text-muted fs-5">Visualisez et réservez votre créneau en temps réel grâce à notre intégration API.</p>
               </div>
             </div>
@@ -158,7 +158,7 @@ export default function Home() {
                 <span className="fs-1 mb-3 d-block" style={{ color: 'var(--color-secondary, #4FC3F7)' }}>
                   <i className="fas fa-shield-alt"></i>
                 </span>
-                <h3 className="card-title fw-bolder mb-3">Partenaires Certifiés</h3>
+                <h3 className="card-title fw-bolder mb-3">🛡️ Partenaires Certifiés</h3>
                 <p className="card-text text-muted fs-5">Accédez uniquement aux ateliers vérifiés (PART-145, EASA, etc.).</p>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function Home() {
                 <span className="fs-1 mb-3 d-block" style={{ color: 'var(--color-secondary, #4FC3F7)' }}>
                   <i className="fas fa-map-marker-alt"></i> 
                 </span>
-                <h3 className="card-title fw-bolder mb-3">Géolocalisation Optimale</h3>
+                <h3 className="card-title fw-bolder mb-3">🗺️ Géolocalisation Optimale</h3>
                 <p className="card-text text-muted fs-5">Trouvez le hangar idéal sur votre trajet. Réduisez les coûts de convoyage.</p>
               </div>
             </div>
