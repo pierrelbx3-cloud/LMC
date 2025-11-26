@@ -16,8 +16,6 @@ import Contact from './pages/Contact';
 import Search from './pages/Search'; 
 
 // Importation des Pages Professionnelles (Back Office)
-// REMPLACÉ : On importe le Dashboard à la place du Login de la page
-// NOUVEAU : Importation du composant de tableau de bord
 import ProDashboard from './pages/pro/ProDashboard'; 
 import Agenda from './pages/pro/Agenda';      
 import HangarUpdate from './pages/pro/HangarUpdate';
@@ -29,36 +27,32 @@ function App() {
     <div className="App d-flex flex-column min-vh-100">
       <Header /> {/* Le Header est visible sur toutes les pages */}
       
-      {/* Le conteneur main prend l'espace restant et centre le contenu */}
-      <main className="container flex-grow-1 py-4">
+      {/* CORRECTION : Suppression de 'container' et de 'py-4'. 
+         L'élément main prend 100% de la largeur du parent. */}
+      <main className="flex-grow-1 w-100"> 
         <Routes>
-          {/* --- ROUTES PUBLIQUES et CLIENTS --- */}
+          {/* --- ROUTE HOME : PAS DE PADDING (la bannière gère son propre espacement) --- */}
           <Route path="/" element={<Home />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/search" element={<Search />} /> 
           
-          {/* MODIFICATION : La route /login affiche maintenant directement le Dashboard Pro 
-             (en attendant la réactivation du login) */}
-          <Route path="/login" element={<ProDashboard />} />
+          {/* --- AUTRES ROUTES : AJOUT DU PADDING INTERNE (container py-4) --- */}
+          {/* Le container gère l'alignement centré et le py-4 ajoute l'espacement requis. */}
+          
+          <Route path="/services" element={<div className="container py-4"><Services /></div>} />
+          <Route path="/about" element={<div className="container py-4"><About /></div>} />
+          <Route path="/contact" element={<div className="container py-4"><Contact /></div>} />
+          <Route path="/search" element={<div className="container py-4"><Search /></div>} /> 
+          
+          <Route path="/login" element={<div className="container py-4"><ProDashboard /></div>} />
 
-          {/* --- ROUTES PROTÉGÉES (PROFESSIONNELS) --- */}
-          {/* NOTE : La protection a été retirée temporairement pour permettre l'accès 
-             aux pages de gestion via le Dashboard tant que le Login est inactif. */}
-          
-          {/* Ancienne route /pro/agenda (maintenant accessible directement) */}
-          <Route path="/pro/agenda" element={<Agenda />} />
-          
-          {/* Ancienne route /pro/hangar (maintenant accessible directement) */}
-          <Route path="/pro/hangar" element={<HangarUpdate />} />
+          {/* --- ROUTES PROTÉGÉES (PROFESSIONNELS) AVEC PADDING --- */}
+          <Route path="/pro/agenda" element={<div className="container py-4"><Agenda /></div>} />
+          <Route path="/pro/hangar" element={<div className="container py-4"><HangarUpdate /></div>} />
 
           {/* Route 404 (Attrape toutes les autres routes) */}
           <Route path="*" element={<h2 className="text-center mt-5">404 - Page Introuvable</h2>} />
         </Routes>
       </main> 
       
-      {/* CORRECTION : Utilisation de la balise du composant React Footer (avec la majuscule) */}
       <Footer/>
     </div>
   );
