@@ -13,7 +13,13 @@ export default function Header() {
     <nav className="navbar navbar-expand-lg navbar-dark custom-navbar-style shadow-sm sticky-top">
       <div className="container">
         {/* Marque LMC */}
-        <Link className="navbar-brand fw-bold text-white" to="/">Let Me Check</Link>
+        <Link 
+  className="navbar-brand fw-bold text-white" 
+  to="/"
+  style={{ fontFamily: "'Playfair Display', serif" }} // 💡 AJOUT DU STYLE DE POLICE
+>
+  Let Me Check
+</Link>
         
         {/* Bouton Hamburger */}
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
