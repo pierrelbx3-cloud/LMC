@@ -3,7 +3,6 @@ import { Routes, Route } from 'react-router-dom';
 // Assurez-vous d'avoir bien créé ce composant dans src/components/
 import Header from './components/Header'; 
 // Assurez-vous d'avoir bien créé ce composant dans src/components/
-import ProtectedRoute from './components/ProtectedRoute'; 
 import Footer from './components/Footer';
 
 // Importation des Pages de Présentation (Front Office)
@@ -19,6 +18,7 @@ import Search from './pages/Search';
 import ProDashboard from './pages/pro/ProDashboard'; 
 import Agenda from './pages/pro/Agenda';      
 import HangarUpdate from './pages/pro/HangarUpdate';
+import AdminUpdate from './pages/pro/AdminUpdate';
 
 
 function App() {
@@ -47,7 +47,7 @@ function App() {
           {/* --- ROUTES PROTÉGÉES (PROFESSIONNELS) AVEC PADDING --- */}
           <Route path="/pro/agenda" element={<div className="container py-4"><Agenda /></div>} />
           <Route path="/pro/hangar" element={<div className="container py-4"><HangarUpdate /></div>} />
-
+          <Route path="/pro/admin" element={<div className="container py-4"><AdminUpdate /></div>} />
           {/* Route 404 (Attrape toutes les autres routes) */}
           <Route path="*" element={<h2 className="text-center mt-5">404 - Page Introuvable</h2>} />
         </Routes>

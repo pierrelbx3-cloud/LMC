@@ -1,0 +1,1 @@
+export default function AdminUpdate() { return <h2>⚙️ Gestion du Hangar et des Services</h2>; }
