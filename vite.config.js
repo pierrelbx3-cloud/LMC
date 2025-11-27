@@ -9,3 +9,6 @@ export default defineConfig({
     environment: 'jsdom',
   },
 })
+define: {
+  'process.env': process.env
+}
