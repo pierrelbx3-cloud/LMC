@@ -7,9 +7,10 @@ const SERVICES_TABLE = 'services';
 const HANGARS_TABLE = 'hangars';
 const HANGAR_SERVICE_TABLE = 'hangar_service';
 const HANGAR_AVION_TABLE = 'hangar_avion';
+const AIRPORT_TABLE = 'airports';
 
 export default function SearchComponent() {
-  // --- ÉTATS GÉRANT LA LOGIQUE ---
+  // --- États ---
   const [searchPhase, setSearchPhase] = useState(1);
   const [modelsRaw, setModelsRaw] = useState([]);
   const [productCategories, setProductCategories] = useState([]);
@@ -17,20 +18,20 @@ export default function SearchComponent() {
   const [filteredModels, setFilteredModels] = useState([]);
   const [services, setServices] = useState([]);
 
-  // --- ÉTATS GÉRANT LES INPUTS ---
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedTcHolder, setSelectedTcHolder] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
 
-  // --- ÉTATS GÉRANT LES RÉSULTATS ---
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [baseHangarList, setBaseHangarList] = useState([]);
 
-  // --- Réinitialisation ---
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+
+  // --- Réinitialiser la recherche ---
   const handleReset = () => {
     setSelectedCategory('');
     setSelectedTcHolder('');
@@ -44,28 +45,27 @@ export default function SearchComponent() {
     setLoading(false);
   };
 
-  // --- 1. CHARGEMENT INITIAL DES DONNÉES ---
+  // --- 1. Chargement initial ---
   const fetchInitialData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // Charger toutes les lignes de type_avion
+      // Charger les avions
       const { data: avionData, error: avionError } = await supabase
         .from(MODEL_AVION_TABLE)
         .select('id_type, product_category, tc_holder, model_avion');
       if (avionError) throw avionError;
       setModelsRaw(avionData);
 
-      // Extraire les product_categories uniques
+      // Extraire les product categories uniques
       const uniqueCategories = [...new Set(avionData.map(a => a.product_category))].filter(Boolean);
       setProductCategories(uniqueCategories.map(c => ({ id: c, name: c })));
 
-      // Charger Services
+      // Charger les services
       const { data: serviceData, error: serviceError } = await supabase
         .from(SERVICES_TABLE)
         .select('id_service, description');
       if (serviceError) throw serviceError;
-
       setServices(serviceData.map(s => ({ id: s.id_service, name: s.description })));
 
     } catch (err) {
@@ -80,7 +80,7 @@ export default function SearchComponent() {
     fetchInitialData();
   }, [fetchInitialData]);
 
-  // --- 2. FILTRAGE DYNAMIQUE DES TC HOLDERS ---
+  // --- 2. Filtrage TC Holder ---
   useEffect(() => {
     if (selectedCategory) {
       const filtered = modelsRaw.filter(m => m.product_category === selectedCategory);
@@ -97,7 +97,7 @@ export default function SearchComponent() {
     }
   }, [selectedCategory, modelsRaw]);
 
-  // --- 3. FILTRAGE DYNAMIQUE DES MODELS ---
+  // --- 3. Filtrage modèles ---
   useEffect(() => {
     if (selectedCategory && selectedTcHolder) {
       const filtered = modelsRaw.filter(
@@ -112,7 +112,7 @@ export default function SearchComponent() {
     }
   }, [selectedCategory, selectedTcHolder, modelsRaw]);
 
-  // --- 4. RECHERCHE DES HANGARS ---
+  // --- 4. Recherche hangars ---
   const handleSearch = useCallback(async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -129,7 +129,7 @@ export default function SearchComponent() {
       return;
     }
 
-    // PHASE 1
+    // --- PHASE 1 ---
     if (searchPhase === 1) {
       try {
         const { data, error } = await supabase
@@ -142,9 +142,20 @@ export default function SearchComponent() {
           .limit(50);
         if (error) throw error;
 
+        // Ajouter lat/lon depuis table airports
+        const hangarsWithCoords = await Promise.all(data.map(async h => {
+          if (!h.id_icao) return { ...h, lat: null, lon: null };
+          const { data: airportData } = await supabase
+            .from(AIRPORT_TABLE)
+            .select('lat, lon')
+            .eq('Id_ICAO', h.id_icao)
+            .single();
+          return { ...h, lat: airportData?.lat, lon: airportData?.lon };
+        }));
+
         const uniqueResults = [];
         const map = new Map();
-        data.forEach(item => {
+        hangarsWithCoords.forEach(item => {
           if (!map.has(item.id_hangar)) {
             map.set(item.id_hangar, true);
             uniqueResults.push(item);
@@ -164,19 +175,11 @@ export default function SearchComponent() {
       return;
     }
 
-    // PHASE 2
+    // --- PHASE 2 ---
     if (searchPhase === 2) {
-      if (!selectedService || !selectedDate) {
-        setLoading(false);
-        return;
-      }
-
+      if (!selectedService || !selectedDate) { setLoading(false); return; }
       const serviceId = services.find(s => s.name === selectedService)?.id;
-      if (!serviceId) {
-        setError("Service sélectionné invalide.");
-        setLoading(false);
-        return;
-      }
+      if (!serviceId) { setError("Service sélectionné invalide."); setLoading(false); return; }
 
       try {
         const { data, error } = await supabase
@@ -191,9 +194,19 @@ export default function SearchComponent() {
           .limit(50);
         if (error) throw error;
 
+        const hangarsWithCoords = await Promise.all(data.map(async h => {
+          if (!h.id_icao) return { ...h, lat: null, lon: null };
+          const { data: airportData } = await supabase
+            .from(AIRPORT_TABLE)
+            .select('lat, lon')
+            .eq('Id_ICAO', h.id_icao)
+            .single();
+          return { ...h, lat: airportData?.lat, lon: airportData?.lon };
+        }));
+
         const uniqueResults = [];
         const map = new Map();
-        data.forEach(item => {
+        hangarsWithCoords.forEach(item => {
           if (!map.has(item.id_hangar)) {
             map.set(item.id_hangar, true);
             uniqueResults.push(item);
@@ -213,10 +226,7 @@ export default function SearchComponent() {
 
   }, [searchPhase, selectedCategory, selectedTcHolder, selectedModel, selectedService, selectedDate, services, modelsRaw]);
 
-  // --- RENDU UI ---
-  if (error) return <div className="alert alert-danger m-5">{error}</div>;
-  if (loading && !selectedDate) return <div className="text-center m-5"><div className="spinner-border text-primary"></div></div>;
-
+  // --- RENDU ---
   const currentPhaseTitle = searchPhase === 1
     ? "1. Sélectionner votre Appareil"
     : "2. Affiner par Service et Disponibilité";
@@ -228,7 +238,10 @@ export default function SearchComponent() {
         <span className="badge bg-secondary ms-3">Phase {searchPhase}</span>
       </h1>
 
-      {/* FORMULAIRE */}
+      {error && <div className="alert alert-danger m-5">{error}</div>}
+      {loading && !selectedDate && <div className="text-center m-5"><div className="spinner-border text-primary"></div></div>}
+
+      {/* Formulaire */}
       <div className="card shadow p-4 bg-light mb-5">
         <h3 className="h5 fw-bold mb-4">{currentPhaseTitle}</h3>
         <form onSubmit={handleSearch}>
@@ -278,7 +291,7 @@ export default function SearchComponent() {
               </select>
             </div>
 
-            {/* PHASE 2 */}
+            {/* Phase 2 */}
             {searchPhase === 2 && (
               <>
                 <div className="col-md-4">
@@ -304,18 +317,10 @@ export default function SearchComponent() {
                     required
                   />
                 </div>
-                <div className="col-md-4">
-                  <label className="form-label fw-bold">📍 Emplacement</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Ex: Paris (Optionnel)"
-                  />
-                </div>
               </>
             )}
 
-            {/* BOUTONS */}
+            {/* Boutons */}
             <div className="col-12 text-center mt-4">
               <button
                 type="submit"
@@ -326,16 +331,11 @@ export default function SearchComponent() {
                   (searchPhase === 2 && (!selectedService || !selectedDate))
                 }
               >
-                🔎
-                {loading
-                  ? ' Recherche...'
-                  : searchPhase === 1
-                    ? ` 1/2. Trouver ${searchResults.length > 0 ? searchResults.length : ''} Hangars Compatibles`
-                    : ' 2/2. Affiner la Recherche'}
+                🔎 {loading ? 'Recherche...' : (searchPhase === 1 ? `1/2. Trouver ${searchResults.length} Hangars` : '2/2. Affiner la Recherche')}
               </button>
               {searchPhase === 2 && (
                 <button type="button" onClick={handleReset} className="btn btn-link ms-3 text-danger">
-                  Nouvelle Recherche (Réinitialiser)
+                  Nouvelle Recherche
                 </button>
               )}
             </div>
@@ -343,49 +343,47 @@ export default function SearchComponent() {
         </form>
       </div>
 
-      {/* RÉSULTATS */}
-      {searchPhase === 2 && searchResults.length > 0 ? (
-        <div className="row g-4">
-          <h3 className="mb-4">
-            Hangars Disponibles : {searchResults.length} trouvé{searchResults.length > 1 ? 's' : ''}
-            <small className="text-muted fs-6 d-block mt-1">
-              {`Affiche les hangars compatibles avec ${selectedModel} et offrant le service "${selectedService}".`}
-            </small>
-          </h3>
+      {/* Résultats Phase 2 */}
+      {searchPhase === 2 && (
+        <>
+          {searchResults.length > 0 ? (
+            <div className="row g-4">
+              {searchResults.map(hangar => {
+                const lat = hangar.lat || 0;
+                const lon = hangar.lon || 0;
+                const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+ff0000(${lon},${lat})/${lon},${lat},10,0,0/300x200?access_token=${mapboxToken}`;
 
-          {searchResults.map(hangar => (
-            <div key={hangar.id_hangar} className="col-md-6 col-lg-4">
-              <div className="card h-100 shadow-sm border-success transition-all duration-300 hover:shadow-lg">
-                <div className="card-body">
-                  <h5 className="card-title text-success fw-bold">{hangar.nom_hangar}</h5>
-                  <p className="mb-1 text-muted small">✈️ Appareil : {selectedModel}</p>
-                  <p className="mb-2 text-primary small">🔧 Service : {selectedService || "Tous Services"}</p>
-                  <p className="mb-1">📍 {hangar.ville}, {hangar.pays} (ICAO: {hangar.id_icao})</p>
-                  <div className="mt-3 pt-2 border-top">
-                    {selectedDate ? (
-                      <button className="btn btn-success w-100 btn-sm">Réserver le {selectedDate}</button>
-                    ) : (
-                      <span className="text-warning small d-block text-center">
-                        Entrez une date pour finaliser la réservation
-                      </span>
-                    )}
+                return (
+                  <div key={hangar.id_hangar} className="col-md-6 col-lg-4">
+                    <div className="card h-100 shadow-sm border-success">
+                      <div className="card-body">
+                        <h5 className="card-title text-success fw-bold">{hangar.nom_hangar}</h5>
+                        <p className="mb-1 text-muted small">✈️ Appareil : {selectedModel}</p>
+                        <p className="mb-2 text-primary small">🔧 Service : {selectedService || "Tous Services"}</p>
+                        <p className="mb-1">📍 {hangar.ville}, {hangar.pays} (ICAO: {hangar.id_icao})</p>
+
+                        {/* Image Mapbox */}
+                        <div className="mt-3 mb-3">
+                          <img src={mapUrl} alt={`Carte de ${hangar.nom_hangar}`} className="img-fluid rounded" />
+                        </div>
+
+                        <div className="mt-3 pt-2 border-top">
+                          {selectedDate ? (
+                            <button className="btn btn-success w-100 btn-sm">Réserver le {selectedDate}</button>
+                          ) : (
+                            <span className="text-warning small d-block text-center">Entrez une date pour finaliser la réservation</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
-      ) : (
-        searchPhase === 2 && !loading && (
-          <div className="alert alert-warning text-center">Aucun hangar trouvé pour ces critères d'affinement.</div>
-        )
-      )}
-
-      {/* Message initial Phase 1 */}
-      {searchPhase === 1 && !loading && (
-        <div className="alert alert-info text-center">
-          Veuillez choisir une catégorie, un fabricant et un modèle d'avion ci-dessus pour lancer la première étape de la recherche.
-        </div>
+          ) : !loading && (
+            <div className="alert alert-warning text-center">Aucun hangar trouvé pour ces critères.</div>
+          )}
+        </>
       )}
     </div>
   );
