@@ -1,11 +1,11 @@
 // src/pages/pro/HangarFullEdit.jsx
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../supabaseClient'; // Ajuster le chemin si nécessaire
+import { supabase } from '../../supabaseClient';
 
 // =========================================================
-// Composant RelationEditor (Agréments et MRO)
+// Composant RelationEditor
 // =========================================================
-const RelationEditor = ({ title, options, currentIds, onUpdate, idKey, nameKey, junctionTable, hangarId }) => {
+const RelationEditor = ({ title, options, currentIds, onUpdate, idKey, nameKey, junctionTable }) => {
     const [selectedIds, setSelectedIds] = useState(currentIds);
 
     useEffect(() => { setSelectedIds(currentIds); }, [currentIds]);
@@ -41,19 +41,24 @@ const RelationEditor = ({ title, options, currentIds, onUpdate, idKey, nameKey, 
                 </div>
             </div>
 
-            <p className="fw-bold small mb-1 mt-3">Disponibles :</p>
-            <div className="d-flex flex-wrap gap-2">
-                {availableOptions.map(option => (
-                    <div
-                        key={option[idKey]}
-                        className="badge p-2 bg-light border text-dark"
-                        onClick={() => handleToggle(option[idKey])}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        {option[nameKey]} ➕
+            {/* Affichage disponibles uniquement si ce ne sont pas les agréments */}
+            {title !== "3. Agréments liés" && (
+                <>
+                    <p className="fw-bold small mb-1 mt-3">Disponibles :</p>
+                    <div className="d-flex flex-wrap gap-2">
+                        {availableOptions.map(option => (
+                            <div
+                                key={option[idKey]}
+                                className="badge p-2 bg-light border text-dark"
+                                onClick={() => handleToggle(option[idKey])}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                {option[nameKey]} ➕
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
+                </>
+            )}
         </div>
     );
 };
@@ -75,6 +80,11 @@ export default function HangarFullEdit() {
     const [newAgreementNumber, setNewAgreementNumber] = useState("");
     const [newAgreementCountry, setNewAgreementCountry] = useState("");
     const [createAgreementStatus, setCreateAgreementStatus] = useState("");
+
+    // Pour ajout MRO
+    const [newMROName, setNewMROName] = useState("");
+    const [selectedMROId, setSelectedMROId] = useState("");
+    const [createMROStatus, setCreateMROStatus] = useState("");
 
     // ----------------- Chargement initial -----------------
     useEffect(() => {
@@ -163,6 +173,42 @@ export default function HangarFullEdit() {
         }
     };
 
+    // ----------------- Ajouter MRO -----------------
+    const handleAddMRO = async () => {
+        if (!newMROName && !selectedMROId) {
+            setCreateMROStatus("Écrire un nom ou sélectionner une compagnie");
+            return;
+        }
+        setCreateMROStatus("Ajout en cours...");
+
+        try {
+            let mroId = selectedMROId;
+
+            // Créer nouvelle MRO si nécessaire
+            if (newMROName) {
+                const { data, error } = await supabase.from('mro_company')
+                    .insert({ name: newMROName })
+                    .select().single();
+                if (error) throw error;
+                setMROCompanies(prev => [...prev, data]);
+                mroId = data.id_comp;
+                setNewMROName("");
+            }
+
+            // Ajouter relation hangar ↔ MRO
+            if (mroId) {
+                const newIds = [...(hangarData.mro_ids||[]), mroId];
+                await supabase.from('hangar_company').insert({ id_hangar: selectedHangarId, id_comp: mroId });
+                setHangarData(prev => ({ ...prev, mro_ids: newIds }));
+            }
+
+            setSelectedMROId("");
+            setCreateMROStatus("MRO Company ajoutée !");
+        } catch (err) {
+            setCreateMROStatus("Erreur : " + err.message);
+        }
+    };
+
     // ----------------- Sauvegarde champs simples -----------------
     const handleSimpleFieldChange = (e) => setHangarData({ ...hangarData, [e.target.name]: e.target.value });
     const handleSubmit = async (e) => {
@@ -233,9 +279,27 @@ export default function HangarFullEdit() {
                         {createAgreementStatus && <p className="mt-2 text-info">{createAgreementStatus}</p>}
                     </div>
 
+                    {/* Ajouter une MRO Company */}
+                    <div className="mb-5 p-4 border rounded-3 shadow-sm bg-white">
+                        <h5 style={{color:'var(--color-primary,#1A237E)'}}>➕ Ajouter une MRO Company</h5>
+                        <div className="row g-3 mt-2">
+                            <div className="col-md-6">
+                                <input className="form-control" placeholder="Nouveau nom de MRO" value={newMROName} onChange={e=>setNewMROName(e.target.value)}/>
+                            </div>
+                            <div className="col-md-6">
+                                <select className="form-select" value={selectedMROId} onChange={e=>setSelectedMROId(e.target.value)}>
+                                    <option value="">Ou choisir une MRO existante</option>
+                                    {mroCompanies.map(m=> <option key={m.id_comp} value={m.id_comp}>{m.name}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        <button className="btn btn-success mt-2" onClick={handleAddMRO}>Ajouter</button>
+                        {createMROStatus && <p className="mt-2 text-info">{createMROStatus}</p>}
+                    </div>
+
                     {/* Relations */}
-                    <RelationEditor title="3. Agréments liés" options={agreements} currentIds={hangarData.agreement_ids||[]} onUpdate={handleRelationUpdate} idKey="id_agreement" nameKey="numero_agrement" junctionTable="hangar_agreement" hangarId={selectedHangarId}/>
-                    <RelationEditor title="4. MRO Companies" options={mroCompanies} currentIds={hangarData.mro_ids||[]} onUpdate={handleRelationUpdate} idKey="id_comp" nameKey="name" junctionTable="hangar_company" hangarId={selectedHangarId}/>
+                    <RelationEditor title="3. Agréments liés" options={agreements} currentIds={hangarData.agreement_ids||[]} onUpdate={handleRelationUpdate} idKey="id_agreement" nameKey="numero_agrement" junctionTable="hangar_agreement"/>
+                    <RelationEditor title="4. MRO Companies" options={mroCompanies} currentIds={hangarData.mro_ids||[]} onUpdate={handleRelationUpdate} idKey="id_comp" nameKey="name" junctionTable="hangar_company"/>
                 </>
             )}
         </div>

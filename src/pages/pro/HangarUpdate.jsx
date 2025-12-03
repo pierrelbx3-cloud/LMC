@@ -230,9 +230,12 @@ export default function HangarUpdate() {
                     displayName: `${t.model_avion} (${t.tc_holder})`,
                 }));
 
-                setHangars(h);
-                setAllAvionTypes(mappedAvions);
-                setAllServices(s);
+                setHangars(h.sort((a, b) =>
+    a.nom_hangar.localeCompare(b.nom_hangar)));
+                setAllAvionTypes(mappedAvions.sort((a, b) =>
+    a.displayName.localeCompare(b.displayName)));
+                setAllServices(s.sort((a, b) =>
+    a.description.localeCompare(b.description)));
 
                 if (h.length > 0) setSelectedHangarId(h[0].id_hangar);
             } finally {
