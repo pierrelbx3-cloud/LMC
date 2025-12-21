@@ -1,20 +1,23 @@
-// Header.jsx
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../supabaseClient';
 
 export default function Header() {
   const collapseRef = useRef(null);
+  const { user } = useAuth();
 
   const handleLinkClick = () => {
-    // Ferme le menu s'il est ouvert
-    const collapseEl = collapseRef.current;
-    if (collapseEl && collapseEl.classList.contains('show')) {
-      // Utilise l'API Bootstrap Collapse pour le fermer
-      const bsCollapse = window.bootstrap.Collapse.getInstance(collapseEl);
-      if (bsCollapse) {
-        bsCollapse.hide();
-      }
+    const el = collapseRef.current;
+    if (el && el.classList.contains('show')) {
+      const bsCollapse = window.bootstrap.Collapse.getInstance(el);
+      if (bsCollapse) bsCollapse.hide();
     }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    handleLinkClick();
   };
 
   return (
@@ -23,7 +26,6 @@ export default function Header() {
         <Link
           className="navbar-brand fw-bold text-white"
           to="/"
-          style={{ fontFamily: "'Playfair Display', serif" }}
           onClick={handleLinkClick}
         >
           Let Me Check
@@ -41,28 +43,62 @@ export default function Header() {
         <div className="collapse navbar-collapse" id="navbarNav" ref={collapseRef}>
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
-              <Link className="nav-link" to="/search" onClick={handleLinkClick}>🔍 Find a MRO</Link>
+              <Link className="nav-link" to="/search" onClick={handleLinkClick}>
+                🔍 Find a MRO
+              </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/services" onClick={handleLinkClick}>Services</Link>
+              <Link className="nav-link" to="/services" onClick={handleLinkClick}>
+                Services
+              </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/contact" onClick={handleLinkClick}>Contact</Link>
+              <Link className="nav-link" to="/contact" onClick={handleLinkClick}>
+                Contact
+              </Link>
             </li>
           </ul>
 
-          <div className="d-flex">
-            <ul className="navbar-nav">
-              <li className="nav-item">
+          {/* === BOUTONS AUTH === */}
+          <div className="d-flex gap-2">
+            {!user && (
+              <>
                 <Link
-                  className="btn btn-accent-pro btn-sm ms-2 text-white"
                   to="/login"
+                  className="btn btn-outline-light btn-sm"
+                  onClick={handleLinkClick}
+                >
+                  Login
+                </Link>
+
+                <Link
+                  to="/login"
+                  className="btn btn-accent-pro btn-sm text-white"
                   onClick={handleLinkClick}
                 >
                   Espace Pro
                 </Link>
-              </li>
-            </ul>
+              </>
+            )}
+
+            {user && (
+              <>
+                <Link
+                  to="/pro/agenda"
+                  className="btn btn-accent-pro btn-sm text-white"
+                  onClick={handleLinkClick}
+                >
+                  Espace Pro
+                </Link>
+
+                <button
+                  className="btn btn-outline-light btn-sm"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

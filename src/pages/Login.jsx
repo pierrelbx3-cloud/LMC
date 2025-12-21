@@ -1,31 +1,64 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // Exemple simple de Login via Magic Link
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    if (error) alert(error.message);
-    else alert('Vérifiez vos emails pour le lien de connexion !');
+    setError(null);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) setError(error.message);
+    else navigate('/pro/agenda');
   };
 
   return (
-    <div className="row justify-content-center">
-      <div className="col-md-6">
-        <h2 className="mt-5">Espace Professionnel</h2>
-        <form onSubmit={handleLogin}>
-          <div className="mb-3">
-            <label className="form-label">Email Pro</label>
-            <input type="email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} />
-          </div>
-          <button type="submit" className="btn btn-primary w-100">Se connecter</button>
-        </form>
-      </div>
-    </div>
+    <form onSubmit={handleLogin} className="mx-auto" style={{ maxWidth: 400 }}>
+      <h3 className="mb-3">Connexion Pro</h3>
+
+      <input
+        type="email"
+        className="form-control mb-2"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+
+      <input
+        type="password"
+        className="form-control mb-2"
+        placeholder="Mot de passe"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+
+      {error && <div className="alert alert-danger">{error}</div>}
+
+      <button className="btn btn-primary w-100">
+        Se connecter
+      </button>
+
+      <p className="mt-3 text-center">
+        Pas encore de compte ?
+      </p>
+
+      <Link
+        to="/register"
+        className="btn btn-outline-secondary w-100"
+      >
+        Créer un compte
+      </Link>
+    </form>
   );
 }
