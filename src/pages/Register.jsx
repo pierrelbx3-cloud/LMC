@@ -25,25 +25,40 @@ export default function Register() {
       return;
     }
 
-    const { error } = await supabase.auth.signUp({
+    // Création utilisateur Supabase Auth
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: {
-          requested_role: requestPro ? 'professional' : 'user',
-        },
-      },
     });
 
-    if (error) {
-      setError(error.message);
-    } else {
-      setMessage(
-        requestPro
-          ? 'Compte créé. Votre demande de rôle professionnel sera examinée.'
-          : 'Compte créé. Vérifiez votre email pour confirmer.'
-      );
+    if (signUpError) {
+      setError(signUpError.message);
+      return;
     }
+
+    const userId = data.user.id;
+
+    // Insertion dans la table profiles
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert([
+        {
+          id: userId,
+          role: requestPro ? 'pro' : 'user',
+          role_status: requestPro ? 'pending' : 'approved',
+        },
+      ]);
+
+    if (profileError) {
+      setError('Compte créé mais erreur lors de la création du profil.');
+      return;
+    }
+
+    setMessage(
+      requestPro
+        ? 'Compte créé. Votre demande de rôle professionnel est en attente.'
+        : 'Compte créé. Vérifiez votre email pour confirmer.'
+    );
   };
 
   return (
