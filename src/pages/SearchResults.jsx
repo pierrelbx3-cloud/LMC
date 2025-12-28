@@ -1,6 +1,14 @@
 import React from 'react';
+import HangarMap from '../components/HangarMap'; // Importation du nouveau composant Leaflet
 
-export default function SearchResults({ searchPhase, searchResults, selectedModel, selectedService, selectedDate, mapboxToken }) {
+export default function SearchResults({ 
+  searchPhase, 
+  searchResults, 
+  selectedModel, 
+  selectedService, 
+  selectedDate 
+}) {
+  
   if (searchPhase !== 2) return null;
 
   return (
@@ -17,22 +25,19 @@ export default function SearchResults({ searchPhase, searchResults, selectedMode
             {searchResults.map(hangar => {
               const lat = hangar.lat || 0;
               const lon = hangar.lon || 0;
-              // Style de carte Mapbox plus discret (Light) pour le luxe
-              const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/pin-s+${encodeURIComponent('#C87569')}(${lon},${lat})/${lon},${lat},10,0,0/400x250?access_token=${mapboxToken}`;
 
               return (
                 <div key={hangar.id_hangar} className="col-md-6 col-lg-4">
                   <div className="card h-100 border-0 shadow-sm transition-hover advantage-card" style={{ borderRadius: '15px' }}>
                     
-                    {/* Image de la Carte en haut */}
-                    <div className="position-relative">
-                      <img 
-                        src={mapUrl} 
-                        alt={`Localisation ${hangar.nom_hangar}`} 
-                        className="card-img-top" 
-                        style={{ height: '180px', objectFit: 'cover', borderTopLeftRadius: '15px', borderTopRightRadius: '15px' }} 
+                    {/* CARTE DYNAMIQUE LEAFLET (Remplace l'image Mapbox) */}
+                    <div className="position-relative" style={{ borderTopLeftRadius: '15px', borderTopRightRadius: '15px', overflow: 'hidden' }}>
+                      <HangarMap 
+                        lat={lat} 
+                        lon={lon} 
+                        name={hangar.nom_hangar} 
                       />
-                      <span className="position-absolute top-0 end-0 m-2 badge" style={{ backgroundColor: 'var(--color-primary)' }}>
+                      <span className="position-absolute top-0 end-0 m-2 badge" style={{ backgroundColor: 'var(--color-primary)', zIndex: 1000 }}>
                         {hangar.id_icao}
                       </span>
                     </div>

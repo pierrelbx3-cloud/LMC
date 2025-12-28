@@ -5,7 +5,7 @@ import { supabase } from '../supabaseClient';
 
 export default function Header() {
   const collapseRef = useRef(null);
-  const { user } = useAuth();
+  const { user } = useAuth(); // On récupère l'utilisateur du contexte
 
   const handleLinkClick = () => {
     const el = collapseRef.current;
@@ -23,11 +23,7 @@ export default function Header() {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark custom-navbar-style shadow-sm sticky-top">
       <div className="container">
-        <Link
-          className="navbar-brand fw-bold text-white"
-          to="/"
-          onClick={handleLinkClick}
-        >
+        <Link className="navbar-brand fw-bold text-white" to="/" onClick={handleLinkClick}>
           Let Me Check
         </Link>
 
@@ -59,40 +55,40 @@ export default function Header() {
             </li>
           </ul>
 
-          {/* === BOUTONS AUTH === */}
           <div className="d-flex gap-2">
-            {!user && (
+            {/* --- CAS : UTILISATEUR NON CONNECTÉ --- */}
+            {!user ? (
               <>
                 <Link
                   to="/login"
-                  className="btn btn-outline-light btn-sm"
+                  className="btn btn-outline-light btn-sm px-3"
                   onClick={handleLinkClick}
                 >
                   Login
                 </Link>
-
+                {/* On peut laisser ce bouton ou le supprimer s'il fait doublon avec Login */}
                 <Link
                   to="/login"
-                  className="btn btn-accent-pro btn-sm text-white"
+                  className="btn btn-accent-pro btn-sm text-white px-3"
                   onClick={handleLinkClick}
                 >
                   Espace Pro
                 </Link>
               </>
-            )}
-
-            {user && (
+            ) : (
+              /* --- CAS : UTILISATEUR CONNECTÉ --- */
               <>
+                {/* CHANGEMENT ICI : Redirection vers le Dashboard principal */}
                 <Link
-                  to="/pro/agenda"
-                  className="btn btn-accent-pro btn-sm text-white"
+                  to="/pro/dashboard"
+                  className="btn btn-accent-pro btn-sm text-white px-3"
                   onClick={handleLinkClick}
                 >
-                  Espace Pro
+                  Mon Dashboard
                 </Link>
 
                 <button
-                  className="btn btn-outline-light btn-sm"
+                  className="btn btn-outline-danger btn-sm px-3"
                   onClick={handleLogout}
                 >
                   Logout
