@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../supabaseClient'; // Import indispensable pour handleSearch
+import { supabase } from '../supabaseClient'; 
 import { useSearchData } from './useSearchData';
 import SearchForm from './SearchForm';
 import SearchResults from './SearchResults';
@@ -17,7 +17,7 @@ export default function SearchComponent() {
   const [searchResults, setSearchResults] = useState([]);
   const [localLoading, setLocalLoading] = useState(false);
 
-  // ON PASSE LES SÉLECTIONS AU HOOK pour qu'il filtre tcHolders et filteredModels
+  // Hook pour récupérer les données de filtrage
   const {
     modelsRaw, 
     productCategories, 
@@ -26,9 +26,7 @@ export default function SearchComponent() {
     services, 
     loading: dataLoading, 
     error 
-  } = useSearchData(selectedCategory, selectedTcHolder); // <--- Passage des dépendances ici
-
-  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+  } = useSearchData(selectedCategory, selectedTcHolder);
 
   const handleReset = () => {
     setSelectedCategory('');
@@ -59,22 +57,22 @@ export default function SearchComponent() {
 
     try {
       if (searchPhase === 1) {
-        // --- PHASE 1 : HANGARS COMPATIBLES AVION ---
+        // --- PHASE 1 : HANGARS COMPATIBLES AVION + COORDONNÉES GPS ---
         const { data, error: err } = await supabase
           .from('hangars')
           .select(`
             id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail,
-            hangar_avion!inner(id_type)
-          `)
+            hangar_avion!inner(id_type),
+            airports (lat, lon, name) 
+          `) // Jointure cruciale pour Leaflet
           .eq('hangar_avion.id_type', typeAvionId);
 
         if (err) throw err;
-
-        // Optionnel : Récupération des coordonnées ICAO si nécessaire ici
         setSearchResults(data);
         setSearchPhase(2);
+
       } else {
-        // --- PHASE 2 : AFFINER PAR SERVICE ---
+        // --- PHASE 2 : AFFINER PAR SERVICE + COORDONNÉES GPS ---
         const serviceObj = services.find(s => s.name === selectedService);
         
         const { data, error: err } = await supabase
@@ -82,8 +80,9 @@ export default function SearchComponent() {
           .select(`
             id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail,
             hangar_service!inner(id_service),
-            hangar_avion!inner(id_type)
-          `)
+            hangar_avion!inner(id_type),
+            airports (lat, lon, name)
+          `) // Jointure cruciale pour Leaflet
           .eq('hangar_avion.id_type', typeAvionId)
           .eq('hangar_service.id_service', serviceObj.id);
 
@@ -92,15 +91,17 @@ export default function SearchComponent() {
       }
     } catch (err) {
       console.error("Erreur lors de la recherche:", err);
+      alert("Une erreur est survenue lors de la récupération des données.");
     } finally {
       setLocalLoading(false);
     }
   };
 
   return (
-    <div className="container py-5">
+    <div className="container-fluid py-5 px-lg-5">
       {error && <div className="alert alert-danger shadow-sm border-0">{error}</div>}
       
+      {/* Formulaire de recherche */}
       <SearchForm
         searchPhase={searchPhase}
         selectedCategory={selectedCategory} 
@@ -123,13 +124,13 @@ export default function SearchComponent() {
         searchResults={searchResults}
       />
 
+      {/* Affichage des résultats avec le nouveau Layout Split-Screen */}
       <SearchResults
         searchPhase={searchPhase}
         searchResults={searchResults}
         selectedModel={selectedModel}
         selectedService={selectedService}
         selectedDate={selectedDate}
-        mapboxToken={mapboxToken}
       />
     </div>
   );
