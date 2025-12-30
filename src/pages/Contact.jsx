@@ -48,17 +48,16 @@ export default function Contact() {
           <div className="mb-4">
             <h4 style={{ color: 'var(--color-primary)' }}>📍 Adresse</h4>
             <p className="text-muted">
-              Aéroport de Toussus-le-Noble<br />
-              Batiment 24<br />
-              78117 Toussus-le-Noble, France
+            33 avenue de Wagram<br />
+            75017 Paris, France
             </p>
           </div>
 
           <div className="mb-4">
             <h4 style={{ color: 'var(--color-primary)' }}>📧 Email</h4>
             {/* Utilisation de la couleur secondaire (Bleu Ciel) pour le lien email */}
-            <p className="fw-bold" style={{ color: 'var(--color-secondary)' }}>
-              contact@aeromaintenance.com
+            <p className="fw-bold" style={{ color: 'var(--color-accent)' }}>
+              contact@let-me-check.com
             </p>
           </div>
 
