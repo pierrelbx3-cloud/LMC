@@ -16,7 +16,7 @@ export default function Header() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await supabase.signOut(); // Correction mineure : supabase.auth.signOut() est plus standard selon la version
     handleLinkClick();
   };
 
@@ -55,7 +55,7 @@ export default function Header() {
             </li>
           </ul>
 
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2 align-items-center">
             {/* --- CAS : UTILISATEUR NON CONNECTÉ --- */}
             {!user ? (
               <>
@@ -66,7 +66,6 @@ export default function Header() {
                 >
                   Login
                 </Link>
-                {/* On peut laisser ce bouton ou le supprimer s'il fait doublon avec Login */}
                 <Link
                   to="/login"
                   className="btn btn-accent-pro btn-sm text-white px-3"
@@ -78,7 +77,15 @@ export default function Header() {
             ) : (
               /* --- CAS : UTILISATEUR CONNECTÉ --- */
               <>
-                {/* CHANGEMENT ICI : Redirection vers le Dashboard principal */}
+                {/* NOUVEAU BOUTON : Admin Dashboard */}
+                <Link
+                  to="/AdminDashboard"
+                  className="btn btn-info btn-sm px-3 text-white"
+                  onClick={handleLinkClick}
+                >
+                  ⚙️ Admin
+                </Link>
+
                 <Link
                   to="/pro/dashboard"
                   className="btn btn-accent-pro btn-sm text-white px-3"

@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Fix pour les icônes Leaflet (obligatoire pour React)
+// Fix pour les icônes Leaflet
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
@@ -15,7 +15,7 @@ const DefaultIcon = L.icon({
   popupAnchor: [1, -34],
 });
 
-// 1. Correction du rendu initial (évite les bugs d'affichage sur mobile/resize)
+// 1. Correction du rendu initial (évite les bugs d'affichage)
 function MapResizer() {
   const map = useMap();
   useEffect(() => {
@@ -27,7 +27,7 @@ function MapResizer() {
   return null;
 }
 
-// 2. Composant pour recentrer la carte lors d'un clic sur la liste
+// 2. Composant pour recentrer la carte
 function RecenterMap({ coords }) {
   const map = useMap();
   useEffect(() => {
@@ -38,7 +38,14 @@ function RecenterMap({ coords }) {
   return null;
 }
 
-export default function SearchResults({ searchPhase, searchResults, selectedModel, selectedService, selectedDate }) {
+export default function SearchResults({ 
+  searchPhase, 
+  searchResults, 
+  selectedModel, 
+  selectedService, 
+  selectedDate,
+  onViewDetail // Reçu du parent SearchComponent
+}) {
   const [activeCoords, setActiveCoords] = useState(null);
 
   if (searchPhase !== 2) return null;
@@ -47,14 +54,13 @@ export default function SearchResults({ searchPhase, searchResults, selectedMode
     <div className="container-fluid mt-4 mt-lg-5 px-0">
       <div className="row g-0">
         
-        {/* === COLONNE CARTE (S'affiche en HAUT sur mobile, à DROITE sur PC) === */}
-        {/* 'order-first' la place en haut sur mobile, 'order-lg-last' la remet à droite sur PC */}
+        {/* === COLONNE CARTE (DROITE) === */}
         <div className="col-lg-5 order-first order-lg-last px-2 px-lg-3 mb-4 mb-lg-0">
           <div 
             className="sticky-top shadow-sm" 
             style={{ 
               top: '90px', 
-              height: '45vh',  // 45% de la hauteur écran sur mobile
+              height: '45vh',
               minHeight: '350px', 
               borderRadius: '20px', 
               overflow: 'hidden',
@@ -79,9 +85,14 @@ export default function SearchResults({ searchPhase, searchResults, selectedMode
                     icon={DefaultIcon}
                   >
                     <Popup>
-                      <div className="text-center">
-                        <strong>{hangar.nom_hangar}</strong><br/>
-                        <small>{hangar.airports.name}</small>
+                      <div className="text-center p-1">
+                        <strong className="d-block mb-2">{hangar.nom_hangar}</strong>
+                        <button 
+                          className="btn btn-primary btn-sm w-100"
+                          onClick={() => onViewDetail(hangar)}
+                        >
+                          Détails
+                        </button>
                       </div>
                     </Popup>
                   </Marker>
@@ -115,7 +126,7 @@ export default function SearchResults({ searchPhase, searchResults, selectedMode
                   className="card border-0 shadow-sm transition-hover" 
                   style={{ 
                     borderRadius: '15px', 
-                    cursor: hasCoords ? 'pointer' : 'default',
+                    cursor: 'pointer',
                     border: activeCoords?.[0] === lat ? '2px solid var(--color-primary)' : 'none',
                     transition: 'all 0.2s ease-in-out'
                   }}
@@ -133,7 +144,7 @@ export default function SearchResults({ searchPhase, searchResults, selectedMode
                     </div>
 
                     <div className="d-flex flex-wrap gap-2 my-2">
-                      <span className="small px-2 py-1 rounded bg-light border-start border-3" style={{ borderLeftColor: 'var(--color-secondary) !important' }}>
+                      <span className="small px-2 py-1 rounded bg-light border-start border-3" style={{ borderLeftColor: 'var(--color-secondary)' }}>
                         🔧 {selectedService || "Maintenance générale"}
                       </span>
                     </div>
@@ -143,10 +154,20 @@ export default function SearchResults({ searchPhase, searchResults, selectedMode
                         <span className="me-1">●</span> Disponible
                       </div>
                       <div className="d-flex gap-2">
-                        <button className="btn btn-outline-secondary btn-sm px-3" style={{ borderRadius: '8px' }}>Détails</button>
-                        {selectedDate && (
-                          <button className="btn btn-primary btn-sm px-3" style={{ borderRadius: '8px' }}>Réserver</button>
-                        )}
+                        {/* Bouton Détails qui ouvre la Modal */}
+                        <button 
+                          className="btn btn-outline-secondary btn-sm px-3" 
+                          style={{ borderRadius: '8px' }}
+                          onClick={(e) => {
+                            e.stopPropagation(); // Empêche le clic de recentrer la carte
+                            onViewDetail(hangar);
+                          }}
+                        >
+                          Détails
+                        </button>
+                        <button className="btn btn-primary btn-sm px-3" style={{ borderRadius: '8px' }}>
+                          Réserver
+                        </button>
                       </div>
                     </div>
                   </div>

@@ -1,4 +1,3 @@
-// src/pages/pro/HangarFullEdit.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 
@@ -223,6 +222,9 @@ export default function HangarFullEdit() {
                     adresse_mail: hangarData.adresse_mail,
                     adresse_mail1: hangarData.adresse_mail1,
                     id_icao: hangarData.id_icao,
+                    Adresse: hangarData.Adresse,
+                    Zip_code: hangarData.Zip_code,
+                    Phone: hangarData.Phone,
                     date_maj: new Date().toISOString()
                 }).eq('id_hangar', selectedHangarId);
             if (error) throw error;
@@ -257,6 +259,9 @@ export default function HangarFullEdit() {
                             <div className="col-md-6"><label>Pays</label><input className="form-control" name="pays" value={hangarData.pays||''} onChange={handleSimpleFieldChange} required/></div>
                             <div className="col-md-6"><label>Ville</label><input className="form-control" name="ville" value={hangarData.ville||''} onChange={handleSimpleFieldChange}/></div>
                             <div className="col-md-6"><label>Code ICAO</label><input className="form-control" name="id_icao" value={hangarData.id_icao||''} onChange={handleSimpleFieldChange}/></div>
+                            <div className="col-md-6"><label>Adresse</label><input className="form-control" name="Adresse" value={hangarData.Adresse||''} onChange={handleSimpleFieldChange}/></div>
+                            <div className="col-md-3"><label>Code Postal</label><input className="form-control" name="Zip_code" value={hangarData.Zip_code||''} onChange={handleSimpleFieldChange}/></div>
+                            <div className="col-md-3"><label>Téléphone</label><input className="form-control" name="Phone" value={hangarData.Phone||''} onChange={handleSimpleFieldChange}/></div>
                             <div className="col-md-6"><label>Email Principal</label><input className="form-control" name="adresse_mail" value={hangarData.adresse_mail||''} onChange={handleSimpleFieldChange} required/></div>
                             <div className="col-md-6"><label>Email Secondaire</label><input className="form-control" name="adresse_mail1" value={hangarData.adresse_mail1||''} onChange={handleSimpleFieldChange}/></div>
                         </div>

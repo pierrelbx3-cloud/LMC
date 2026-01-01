@@ -15,13 +15,16 @@ import Search from './pages/Search';
 
 // Pages Authentification
 import Login from './pages/Login';
-import Register from './pages/Register'; // <-- AJOUTÉ
+import Register from './pages/Register';
 
 // Pages Pro (Back Office)
 import ProDashboard from './pages/pro/ProDashboard'; 
 import Agenda from './pages/pro/Agenda';      
 import HangarUpdate from './pages/pro/HangarUpdate';
 import AdminUpdate from './pages/pro/AdminUpdate';
+
+// --- NOUVEL IMPORT : ADMIN ---
+import AdminDashboard from './pages/AdminDashboard'; 
 
 function App() {
   return (
@@ -40,6 +43,15 @@ function App() {
           {/* --- AUTHENTIFICATION --- */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          {/* --- NOUVELLE ROUTE : ADMIN DASHBOARD --- */}
+          <Route path="/AdminDashboard" element={
+            <ProtectedRoute>
+              <div className="container py-4">
+                <AdminDashboard />
+              </div>
+            </ProtectedRoute>
+          } />
 
           {/* --- ROUTES PROTÉGÉES (Accès restreint au 'user' connecté) --- */}
           <Route path="/pro/dashboard" element={
