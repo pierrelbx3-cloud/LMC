@@ -3,6 +3,8 @@ import { supabase } from '../supabaseClient';
 import { useSearchData } from './useSearchData';
 import SearchForm from './SearchForm';
 import SearchResults from './SearchResults';
+// IMPORT DU NOUVEAU COMPOSANT
+import ResultDetailModal from './ResultDetailModal'; 
 
 export default function SearchComponent() {
   // États de sélection
@@ -16,6 +18,10 @@ export default function SearchComponent() {
   const [searchPhase, setSearchPhase] = useState(1);
   const [searchResults, setSearchResults] = useState([]);
   const [localLoading, setLocalLoading] = useState(false);
+
+  // --- ÉTATS POUR LA MODAL ---
+  const [showModal, setShowModal] = useState(false);
+  const [selectedHangar, setSelectedHangar] = useState(null);
 
   // Hook pour récupérer les données de filtrage
   const {
@@ -36,13 +42,19 @@ export default function SearchComponent() {
     setSelectedDate('');
     setSearchResults([]);
     setSearchPhase(1);
+    setShowModal(false);
+  };
+
+  // --- FONCTION POUR OUVRIR LA MODAL ---
+  const handleOpenModal = (hangar) => {
+    setSelectedHangar(hangar);
+    setShowModal(true);
   };
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setLocalLoading(true);
 
-    // 1. Trouver l'ID technique (UUID) du type d'avion
     const typeAvionId = modelsRaw.find(
       m => m.model_avion === selectedModel &&
            m.tc_holder === selectedTcHolder &&
@@ -57,14 +69,14 @@ export default function SearchComponent() {
 
     try {
       if (searchPhase === 1) {
-        // --- PHASE 1 : HANGARS COMPATIBLES AVION + COORDONNÉES GPS ---
         const { data, error: err } = await supabase
           .from('hangars')
           .select(`
-            id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail,
+            id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail, adresse_mail1,
+            Adresse, Zip_code, Phone,
             hangar_avion!inner(id_type),
             airports (lat, lon, name) 
-          `) // Jointure cruciale pour Leaflet
+          `)
           .eq('hangar_avion.id_type', typeAvionId);
 
         if (err) throw err;
@@ -72,17 +84,17 @@ export default function SearchComponent() {
         setSearchPhase(2);
 
       } else {
-        // --- PHASE 2 : AFFINER PAR SERVICE + COORDONNÉES GPS ---
         const serviceObj = services.find(s => s.name === selectedService);
         
         const { data, error: err } = await supabase
           .from('hangars')
           .select(`
-            id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail,
+            id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail, adresse_mail1,
+            Adresse, Zip_code, Phone,
             hangar_service!inner(id_service),
             hangar_avion!inner(id_type),
             airports (lat, lon, name)
-          `) // Jointure cruciale pour Leaflet
+          `)
           .eq('hangar_avion.id_type', typeAvionId)
           .eq('hangar_service.id_service', serviceObj.id);
 
@@ -124,13 +136,21 @@ export default function SearchComponent() {
         searchResults={searchResults}
       />
 
-      {/* Affichage des résultats avec le nouveau Layout Split-Screen */}
+      {/* Résultats et Carte */}
       <SearchResults
         searchPhase={searchPhase}
         searchResults={searchResults}
         selectedModel={selectedModel}
         selectedService={selectedService}
         selectedDate={selectedDate}
+        onViewDetail={handleOpenModal} // <-- CONNEXION ICI
+      />
+
+      {/* COMPOSANT MODAL (Toujours présent, s'affiche selon showModal) */}
+      <ResultDetailModal 
+        show={showModal} 
+        onClose={() => setShowModal(false)} 
+        hangar={selectedHangar}
       />
     </div>
   );

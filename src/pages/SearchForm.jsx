@@ -11,7 +11,6 @@ export default function SearchForm({
   handleSearch, handleReset, loading, searchResults
 }) {
   
-  // Style dynamique pour l'indicateur d'étape
   const stepStyle = (step) => ({
     width: '32px',
     height: '32px',
@@ -28,7 +27,6 @@ export default function SearchForm({
 
   return (
     <div className="card shadow-lg border-0 p-0 overflow-hidden mb-5" style={{ borderRadius: '15px' }}>
-      {/* Header du formulaire avec dégradé léger */}
       <div className="p-4 border-bottom" style={{ backgroundColor: '#ffffff' }}>
         <div className="d-flex align-items-center">
           <div style={stepStyle(1)}>1</div>
@@ -58,7 +56,7 @@ export default function SearchForm({
             </div>
 
             <div className="col-md-4">
-              <label className="form-label small fw-bold text-uppercase text-muted">✈️ Constructeur (TC Holder)</label>
+              <label className="form-label small fw-bold text-uppercase text-muted">Constructeur</label>
               <select
                 className={`form-select form-select-lg border-0 shadow-sm ${searchPhase === 2 ? 'opacity-75' : ''}`}
                 value={selectedTcHolder}
@@ -72,7 +70,7 @@ export default function SearchForm({
             </div>
 
             <div className="col-md-4">
-              <label className="form-label small fw-bold text-uppercase text-muted">🛩️ Modèle précis</label>
+              <label className="form-label small fw-bold text-uppercase text-muted">Modèle</label>
               <select
                 className={`form-select form-select-lg border-0 shadow-sm ${searchPhase === 2 ? 'opacity-75' : ''}`}
                 value={selectedModel}
@@ -85,59 +83,77 @@ export default function SearchForm({
               </select>
             </div>
 
-            {/* Phase 2 : Service et Date */}
+            {/* Phase 2 : Simplifiée avec Boutons */}
             {searchPhase === 2 && (
               <div className="row g-4 mt-2 animate__animated animate__fadeIn">
+                
+                {/* Type de Maintenance via Boutons */}
                 <div className="col-md-6">
-                  <label className="form-label small fw-bold text-uppercase text-muted">🔧 Type de maintenance</label>
-                  <select
-                    className="form-select form-select-lg border-0 shadow-sm"
-                    value={selectedService}
-                    onChange={e => setSelectedService(e.target.value)}
-                    required
-                  >
-                    <option value="">Quel service recherchez-vous ?</option>
-                    {services.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                  </select>
+                  <label className="form-label small fw-bold text-uppercase text-muted d-block mb-3">🔧 Type de maintenance</label>
+                  <div className="d-flex gap-2">
+                    <button
+                      type="button"
+                      className={`btn btn-lg flex-grow-1 border-0 shadow-sm py-3 ${selectedService === 'Line Maintenance' ? 'btn-accent-pro text-white' : 'btn-white bg-white'}`}
+                      onClick={() => setSelectedService('Line Maintenance')}
+                    >
+                      Line Maintenance
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn btn-lg flex-grow-1 border-0 shadow-sm py-3 ${selectedService === 'Base Maintenance' ? 'btn-accent-pro text-white' : 'btn-white bg-white'}`}
+                      onClick={() => setSelectedService('Base Maintenance')}
+                    >
+                      Base Maintenance
+                    </button>
+                  </div>
                 </div>
+
+                {/* Date via Boutons Simplifiés */}
                 <div className="col-md-6">
-                  <label className="form-label small fw-bold text-uppercase text-muted">📅 Disponibilité souhaitée</label>
-                  <input
-                    type="date"
-                    className="form-control form-control-lg border-0 shadow-sm"
-                    value={selectedDate}
-                    onChange={e => setSelectedDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    required
-                  />
+                  <label className="form-label small fw-bold text-uppercase text-muted d-block mb-3">📅 Urgence</label>
+                  <div className="d-flex gap-2">
+                    <button
+                      type="button"
+                      className={`btn btn-lg flex-grow-1 border-0 shadow-sm py-3 ${selectedDate === 'AOG' ? 'btn-danger text-white' : 'btn-white bg-white'}`}
+                      onClick={() => setSelectedDate('AOG')}
+                    >
+                      Dès que possible
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn btn-lg flex-grow-1 border-0 shadow-sm py-3 ${selectedDate === 'Planned' ? 'btn-accent-pro text-white' : 'btn-white bg-white'}`}
+                      onClick={() => setSelectedDate('Planned')}
+                    >
+                      Planification
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Barre d'action inférieure */}
             <div className="col-12 text-center mt-5 pt-4 border-top">
               <div className="d-flex justify-content-center align-items-center">
                 <button 
                   type="submit" 
                   className="btn btn-accent-pro btn-lg px-5 py-3 rounded-pill shadow"
-                  disabled={loading}
+                  disabled={loading || (searchPhase === 2 && (!selectedService || !selectedDate))}
                   style={{ minWidth: '280px' }}
                 >
                   {loading ? (
                     <span className="spinner-border spinner-border-sm me-2"></span>
                   ) : '🔍 '}
                   {searchPhase === 1 
-                    ? `Voir les ${searchResults.length} ateliers disponibles` 
-                    : 'Confirmer ma recherche'}
+                    ? `Voir les ${searchResults.length} ateliers` 
+                    : 'Lancer la recherche'}
                 </button>
 
                 {searchPhase === 2 && (
                   <button 
                     type="button" 
                     onClick={handleReset} 
-                    className="btn btn-link text-decoration-none text-muted ms-3 hover-danger"
+                    className="btn btn-link text-decoration-none text-muted ms-3"
                   >
-                    🔄 Réinitialiser
+                    🔄 Retour
                   </button>
                 )}
               </div>
