@@ -3,8 +3,9 @@ import { supabase } from '../supabaseClient';
 import { useSearchData } from './useSearchData';
 import SearchForm from './SearchForm';
 import SearchResults from './SearchResults';
-// IMPORT DU NOUVEAU COMPOSANT
 import ResultDetailModal from './ResultDetailModal'; 
+// IMPORT DU NOUVEAU COMPOSANT FORMULAIRE
+import QuoteRequestModal from './QuoteRequestModal'; 
 
 export default function SearchComponent() {
   // États de sélection
@@ -19,8 +20,9 @@ export default function SearchComponent() {
   const [searchResults, setSearchResults] = useState([]);
   const [localLoading, setLocalLoading] = useState(false);
 
-  // --- ÉTATS POUR LA MODAL ---
+  // --- ÉTATS POUR LES MODALES ---
   const [showModal, setShowModal] = useState(false);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [selectedHangar, setSelectedHangar] = useState(null);
 
   // Hook pour récupérer les données de filtrage
@@ -43,12 +45,19 @@ export default function SearchComponent() {
     setSearchResults([]);
     setSearchPhase(1);
     setShowModal(false);
+    setShowQuoteModal(false);
   };
 
-  // --- FONCTION POUR OUVRIR LA MODAL ---
+  // Ouverture de la modal de détails
   const handleOpenModal = (hangar) => {
     setSelectedHangar(hangar);
     setShowModal(true);
+  };
+
+  // Transition : Ferme les détails et ouvre le formulaire de devis
+  const handleOpenQuoteRequest = () => {
+    setShowModal(false); 
+    setShowQuoteModal(true);
   };
 
   const handleSearch = async (e) => {
@@ -74,10 +83,10 @@ export default function SearchComponent() {
           .select(`
             id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail, adresse_mail1,
             Adresse, Zip_code, Phone,
-            hangar_avion!inner(id_type),
+            hangar_triple!inner(id_type),
             airports (lat, lon, name) 
           `)
-          .eq('hangar_avion.id_type', typeAvionId);
+          .eq('hangar_triple.id_type', typeAvionId);
 
         if (err) throw err;
         setSearchResults(data);
@@ -92,11 +101,11 @@ export default function SearchComponent() {
             id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail, adresse_mail1,
             Adresse, Zip_code, Phone,
             hangar_service!inner(id_service),
-            hangar_avion!inner(id_type),
+            hangar_triple!inner(id_type),
             airports (lat, lon, name)
           `)
-          .eq('hangar_avion.id_type', typeAvionId)
-          .eq('hangar_service.id_service', serviceObj.id);
+          .eq('hangar_triple.id_type', typeAvionId)
+          .eq('hangar_service.id_service', serviceObj?.id);
 
         if (err) throw err;
         setSearchResults(data);
@@ -109,11 +118,13 @@ export default function SearchComponent() {
     }
   };
 
+  // Extraction de l'ID type pour la modal
+  const currentTypeId = modelsRaw.find(m => m.model_avion === selectedModel)?.id_type;
+
   return (
     <div className="container-fluid py-5 px-lg-5">
       {error && <div className="alert alert-danger shadow-sm border-0">{error}</div>}
       
-      {/* Formulaire de recherche */}
       <SearchForm
         searchPhase={searchPhase}
         selectedCategory={selectedCategory} 
@@ -136,21 +147,30 @@ export default function SearchComponent() {
         searchResults={searchResults}
       />
 
-      {/* Résultats et Carte */}
       <SearchResults
         searchPhase={searchPhase}
         searchResults={searchResults}
         selectedModel={selectedModel}
         selectedService={selectedService}
         selectedDate={selectedDate}
-        onViewDetail={handleOpenModal} // <-- CONNEXION ICI
+        onViewDetail={handleOpenModal}
       />
 
-      {/* COMPOSANT MODAL (Toujours présent, s'affiche selon showModal) */}
+      {/* MODAL 1 : DÉTAILS DU HANGAR ET AGRÉMENTS */}
       <ResultDetailModal 
         show={showModal} 
         onClose={() => setShowModal(false)} 
         hangar={selectedHangar}
+        selectedTypeId={currentTypeId}
+        onQuoteRequest={handleOpenQuoteRequest} // La fonction de bascule
+      />
+
+      {/* MODAL 2 : FORMULAIRE DE DEVIS (GOOGLE SHEETS) */}
+      <QuoteRequestModal 
+        show={showQuoteModal}
+        onClose={() => setShowQuoteModal(false)}
+        hangar={selectedHangar}
+        selectedModel={selectedModel}
       />
     </div>
   );

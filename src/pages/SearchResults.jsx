@@ -15,7 +15,6 @@ const DefaultIcon = L.icon({
   popupAnchor: [1, -34],
 });
 
-// 1. Correction du rendu initial (évite les bugs d'affichage)
 function MapResizer() {
   const map = useMap();
   useEffect(() => {
@@ -27,7 +26,6 @@ function MapResizer() {
   return null;
 }
 
-// 2. Composant pour recentrer la carte
 function RecenterMap({ coords }) {
   const map = useMap();
   useEffect(() => {
@@ -44,10 +42,11 @@ export default function SearchResults({
   selectedModel, 
   selectedService, 
   selectedDate,
-  onViewDetail // Reçu du parent SearchComponent
+  onViewDetail 
 }) {
   const [activeCoords, setActiveCoords] = useState(null);
 
+  // On ne montre les résultats qu'en phase 2
   if (searchPhase !== 2) return null;
 
   return (
@@ -91,7 +90,7 @@ export default function SearchResults({
                           className="btn btn-primary btn-sm w-100"
                           onClick={() => onViewDetail(hangar)}
                         >
-                          Détails
+                          Voir Détails
                         </button>
                       </div>
                     </Popup>
@@ -109,9 +108,14 @@ export default function SearchResults({
         <div className="col-lg-7 px-4" style={{ maxHeight: '85vh', overflowY: 'auto' }}>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h4 className="fw-bold m-0" style={{ color: 'var(--color-primary)' }}>
-              {searchResults.length} Ateliers disponibles
+              {searchResults.length} Ateliers certifiés
             </h4>
-            <span className="badge bg-light text-dark border p-2">{selectedModel}</span>
+            <div className="d-flex gap-2">
+              <span className="badge bg-light text-dark border p-2">{selectedModel}</span>
+              {selectedService && (
+                 <span className="badge bg-primary-subtle text-primary border p-2">{selectedService}</span>
+              )}
+            </div>
           </div>
           
           <div className="d-flex flex-column gap-3 mb-5">
@@ -119,6 +123,10 @@ export default function SearchResults({
               const lat = hangar.airports?.lat;
               const lon = hangar.airports?.lon;
               const hasCoords = lat && lon;
+
+              // Extraction de la maintenance spécifique depuis hangar_triple si disponible
+              // Note: hangar.hangar_triple est un tableau car c'est une relation hasMany
+              const specMaintenance = hangar.hangar_triple?.[0]?.maintenance_type;
 
               return (
                 <div 
@@ -145,28 +153,32 @@ export default function SearchResults({
 
                     <div className="d-flex flex-wrap gap-2 my-2">
                       <span className="small px-2 py-1 rounded bg-light border-start border-3" style={{ borderLeftColor: 'var(--color-secondary)' }}>
-                        🔧 {selectedService || "Maintenance générale"}
+                        🔧 {specMaintenance || selectedService || "Maintenance certifiée"}
                       </span>
+                      {selectedDate === 'AOG' && (
+                        <span className="small px-2 py-1 rounded bg-danger-subtle text-danger border-start border-3 border-danger">
+                          ⚡ Support AOG
+                        </span>
+                      )}
                     </div>
 
                     <div className="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
                       <div className="text-success small fw-bold">
-                        <span className="me-1">●</span> Disponible
+                        <span className="me-1">●</span> Station agréée
                       </div>
                       <div className="d-flex gap-2">
-                        {/* Bouton Détails qui ouvre la Modal */}
                         <button 
                           className="btn btn-outline-secondary btn-sm px-3" 
                           style={{ borderRadius: '8px' }}
                           onClick={(e) => {
-                            e.stopPropagation(); // Empêche le clic de recentrer la carte
+                            e.stopPropagation();
                             onViewDetail(hangar);
                           }}
                         >
-                          Détails
+                          Détails & Agréments
                         </button>
                         <button className="btn btn-primary btn-sm px-3" style={{ borderRadius: '8px' }}>
-                          Réserver
+                          Contacter
                         </button>
                       </div>
                     </div>

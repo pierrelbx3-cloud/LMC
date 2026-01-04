@@ -1,23 +1,39 @@
 import React, { useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Ajout de useNavigate
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 
 export default function Header() {
   const collapseRef = useRef(null);
-  const { user } = useAuth(); // On récupère l'utilisateur du contexte
+  const { user } = useAuth(); 
+  const navigate = useNavigate(); // Pour rediriger après le logout
 
   const handleLinkClick = () => {
     const el = collapseRef.current;
     if (el && el.classList.contains('show')) {
-      const bsCollapse = window.bootstrap.Collapse.getInstance(el);
+      // Vérification sécurisée de l'instance Bootstrap
+      const bsCollapse = window.bootstrap?.Collapse?.getInstance(el);
       if (bsCollapse) bsCollapse.hide();
     }
   };
 
   const handleLogout = async () => {
-    await supabase.signOut(); // Correction mineure : supabase.auth.signOut() est plus standard selon la version
-    handleLinkClick();
+    try {
+      // CORRECTION : Utilisation de supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+
+      // Fermer le menu mobile
+      handleLinkClick();
+      
+      // Rediriger l'utilisateur vers l'accueil ou la page login
+      navigate('/'); 
+      
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error.message);
+      alert("Erreur lors de la déconnexion");
+    }
   };
 
   return (
@@ -56,7 +72,6 @@ export default function Header() {
           </ul>
 
           <div className="d-flex gap-2 align-items-center">
-            {/* --- CAS : UTILISATEUR NON CONNECTÉ --- */}
             {!user ? (
               <>
                 <Link
@@ -75,9 +90,7 @@ export default function Header() {
                 </Link>
               </>
             ) : (
-              /* --- CAS : UTILISATEUR CONNECTÉ --- */
               <>
-                {/* NOUVEAU BOUTON : Admin Dashboard */}
                 <Link
                   to="/AdminDashboard"
                   className="btn btn-info btn-sm px-3 text-white"
