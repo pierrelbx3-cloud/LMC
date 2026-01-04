@@ -18,11 +18,12 @@ export default function SearchForm({
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: searchPhase === step ? 'var(--color-accent)' : 'var(--color-primary)',
+    backgroundColor: searchPhase >= step ? 'var(--color-accent)' : 'var(--color-primary)',
     color: 'white',
     marginRight: '10px',
     fontSize: '0.9rem',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    transition: 'all 0.3s ease'
   });
 
   return (
@@ -40,7 +41,7 @@ export default function SearchForm({
       <div className="card-body p-4" style={{ backgroundColor: 'var(--color-light-bg)' }}>
         <form onSubmit={handleSearch}>
           <div className="row g-4">
-            {/* Phase 1 : Sélection Appareil */}
+            {/* Phase 1 : Sélection Appareil - On vérifie id_type via hangar_triple maintenant */}
             <div className="col-md-4">
               <label className="form-label small fw-bold text-uppercase text-muted">📦 Catégorie</label>
               <select
@@ -79,36 +80,35 @@ export default function SearchForm({
                 required
               >
                 <option value="">Sélectionner...</option>
-                {filteredModels.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                {filteredModels.map(m => <option key={m.id} value={m.name}>{m.name}</option>)}
               </select>
             </div>
 
-            {/* Phase 2 : Simplifiée avec Boutons */}
+            {/* Phase 2 : Maintenance & Urgence */}
             {searchPhase === 2 && (
               <div className="row g-4 mt-2 animate__animated animate__fadeIn">
                 
-                {/* Type de Maintenance via Boutons */}
+                {/* Type de Maintenance via Boutons (Mappé sur maintenance_type dans hangar_triple) */}
                 <div className="col-md-6">
                   <label className="form-label small fw-bold text-uppercase text-muted d-block mb-3">🔧 Type de maintenance</label>
                   <div className="d-flex gap-2">
                     <button
                       type="button"
-                      className={`btn btn-lg flex-grow-1 border-0 shadow-sm py-3 ${selectedService === 'Line Maintenance' ? 'btn-accent-pro text-white' : 'btn-white bg-white'}`}
-                      onClick={() => setSelectedService('Line Maintenance')}
+                      className={`btn btn-lg flex-grow-1 border-0 shadow-sm py-3 ${selectedService === 'Line' ? 'btn-accent-pro text-white' : 'btn-white bg-white'}`}
+                      onClick={() => setSelectedService('Line')}
                     >
                       Line Maintenance
                     </button>
                     <button
                       type="button"
-                      className={`btn btn-lg flex-grow-1 border-0 shadow-sm py-3 ${selectedService === 'Base Maintenance' ? 'btn-accent-pro text-white' : 'btn-white bg-white'}`}
-                      onClick={() => setSelectedService('Base Maintenance')}
+                      className={`btn btn-lg flex-grow-1 border-0 shadow-sm py-3 ${selectedService === 'Base' ? 'btn-accent-pro text-white' : 'btn-white bg-white'}`}
+                      onClick={() => setSelectedService('Base')}
                     >
                       Base Maintenance
                     </button>
                   </div>
                 </div>
 
-                {/* Date via Boutons Simplifiés */}
                 <div className="col-md-6">
                   <label className="form-label small fw-bold text-uppercase text-muted d-block mb-3">📅 Urgence</label>
                   <div className="d-flex gap-2">
@@ -117,7 +117,7 @@ export default function SearchForm({
                       className={`btn btn-lg flex-grow-1 border-0 shadow-sm py-3 ${selectedDate === 'AOG' ? 'btn-danger text-white' : 'btn-white bg-white'}`}
                       onClick={() => setSelectedDate('AOG')}
                     >
-                      Dès que possible
+                      Dès que possible (AOG)
                     </button>
                     <button
                       type="button"
@@ -143,8 +143,8 @@ export default function SearchForm({
                     <span className="spinner-border spinner-border-sm me-2"></span>
                   ) : '🔍 '}
                   {searchPhase === 1 
-                    ? `Voir les ${searchResults.length} ateliers` 
-                    : 'Lancer la recherche'}
+                    ? `Vérifier la compatibilité` 
+                    : 'Lancer la recherche finale'}
                 </button>
 
                 {searchPhase === 2 && (
@@ -153,7 +153,7 @@ export default function SearchForm({
                     onClick={handleReset} 
                     className="btn btn-link text-decoration-none text-muted ms-3"
                   >
-                    🔄 Retour
+                    🔄 Recommencer
                   </button>
                 )}
               </div>

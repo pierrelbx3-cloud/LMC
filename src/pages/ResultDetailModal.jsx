@@ -1,122 +1,164 @@
-// src/components/ResultDetailModal.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
-export default function ResultDetailModal({ show, onClose, hangar }) {
-  // Si show est false ou si aucun hangar n'est sélectionné, on ne renvoie rien
+// AJOUT DE onQuoteRequest DANS LES PROPS CI-DESSOUS
+export default function ResultDetailModal({ show, onClose, hangar, selectedTypeId, onQuoteRequest }) {
+  const [activeTab, setActiveTab] = useState('admin'); 
+  const [certifications, setCertifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (show && hangar && selectedTypeId) {
+      fetchCertifications();
+    }
+  }, [show, hangar, selectedTypeId]);
+
+  const fetchCertifications = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('hangar_triple')
+        .select(`
+          maintenance_type,
+          agreement (
+            id_agreement,
+            numero_agrement,
+            authorities (
+              name,
+              country,
+              parent_authority
+            )
+          )
+        `)
+        .eq('id_hangar', hangar.id_hangar)
+        .eq('id_type', selectedTypeId);
+
+      if (error) throw error;
+      setCertifications(data || []);
+    } catch (err) {
+      console.error("Erreur chargement agréments:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!show || !hangar) return null;
 
   return (
     <>
-      {/* Overlay (Arrière-plan sombre) */}
       <div 
         className="modal-backdrop fade show" 
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)', zIndex: 1060 }}
-        onClick={onClose} // Ferme la modal si on clique à côté
+        onClick={onClose} 
+        style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 1040 }}
       ></div>
 
-      {/* Fenêtre Modal */}
-      <div className="modal d-block" style={{ zIndex: 1070 }} tabIndex="-1" role="dialog">
-        <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
-          <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+      <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+        <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '15px', overflow: 'hidden' }}>
             
-            {/* Header avec dégradé léger ou couleur primaire */}
-            <div className="modal-header border-bottom-0 p-4 d-flex align-items-start">
-              <div className="flex-grow-1">
-                <h3 className="modal-title fw-bold text-primary mb-1">{hangar.nom_hangar}</h3>
-                <div className="d-flex gap-2 align-items-center">
-                  <span className="badge bg-light text-dark border px-2 py-1 small">
-                    ICAO: {hangar.id_icao || 'N/A'}
-                  </span>
-                  <span className="text-muted small">
-                    📍 {hangar.ville}, {hangar.pays}
-                  </span>
-                </div>
+            <div className="p-4 border-bottom" style={{ backgroundColor: '#ffffff' }}>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h3 className="h5 fw-bold mb-0" style={{ color: 'var(--color-primary)' }}>
+                  {hangar.nom_hangar}
+                </h3>
+                <button type="button" className="btn-close" onClick={onClose}></button>
               </div>
-              <button 
-                type="button" 
-                className="btn-close shadow-none" 
-                onClick={onClose} 
-                aria-label="Close"
-              ></button>
+
+              <div className="d-flex gap-3 border-bottom-0">
+                <button 
+                  className={`btn btn-sm px-4 py-2 rounded-pill fw-bold transition-all ${activeTab === 'admin' ? 'btn-accent-pro text-white shadow' : 'btn-light text-muted'}`}
+                  onClick={() => setActiveTab('admin')}
+                >
+                  📍 Informations
+                </button>
+                <button 
+                  className={`btn btn-sm px-4 py-2 rounded-pill fw-bold transition-all ${activeTab === 'agreements' ? 'active btn-accent-pro text-white shadow' : 'btn-light text-muted'}`}
+                  onClick={() => setActiveTab('agreements')}
+                >
+                  📜 Agréments
+                </button>
+              </div>
             </div>
 
-            {/* Corps de la Modal */}
-            <div className="modal-body p-4 pt-0">
-              <div className="row g-4">
-                
-                {/* Colonne de Gauche : Localisation */}
-                <div className="col-md-6">
-                  <div className="p-3 rounded-4 bg-light border-0 h-100">
-                    <h6 className="fw-bold text-uppercase small text-muted mb-3">
-                      <i className="bi bi-geo-alt-fill me-2"></i>Coordonnées
-                    </h6>
-                    <p className="mb-1 text-dark fw-medium">
-                      {hangar.Adresse || "Adresse non renseignée"}
-                    </p>
-                    <p className="mb-0 text-dark">
-                      {hangar.Zip_code ? `${hangar.Zip_code} ` : ''} 
-                      <span className="text-uppercase fw-bold">{hangar.ville}</span>
-                    </p>
-                    <p className="text-primary mb-0">{hangar.pays}</p>
-                  </div>
-                </div>
-
-                {/* Colonne de Droite : Contact */}
-                <div className="col-md-6">
-                  <div className="p-3 rounded-4 bg-light border-0 h-100">
-                    <h6 className="fw-bold text-uppercase small text-muted mb-3">
-                      <i className="bi bi-telephone-fill me-2"></i>Contact
-                    </h6>
-                    <div className="mb-3">
-                      <p className="small text-muted mb-0">Téléphone</p>
-                      <a href={`tel:${hangar.Phone}`} className="text-decoration-none text-dark fw-bold">
-                        {hangar.Phone || "Non renseigné"}
-                      </a>
+            <div className="modal-body p-4" style={{ backgroundColor: 'var(--color-light-bg)', minHeight: '300px' }}>
+              
+              {activeTab === 'admin' ? (
+                <div className="row g-4 animate__animated animate__fadeIn">
+                  <div className="col-md-6">
+                    <div className="mb-4">
+                      <label className="form-label small fw-bold text-uppercase text-muted d-block">Adresse Physique</label>
+                      <p className="fw-medium mb-0">{hangar.Adresse || 'N/A'}</p>
+                      <p className="text-muted small">{hangar.Zip_code} {hangar.ville}, {hangar.pays}</p>
                     </div>
                     <div>
-                      <p className="small text-muted mb-0">E-mail de contact</p>
-                      <a href={`mailto:${hangar.adresse_mail}`} className="text-decoration-none d-block text-truncate fw-bold">
-                        {hangar.adresse_mail}
-                      </a>
-                      {hangar.adresse_mail1 && (
-                        <small className="text-muted d-block mt-1">
-                          Alt: {hangar.adresse_mail1}
-                        </small>
-                      )}
+                      <label className="form-label small fw-bold text-uppercase text-muted d-block">Contact Email</label>
+                      <span className="fw-bold" style={{ color: 'var(--color-accent)' }}>{hangar.adresse_mail}</span>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-4">
+                      <label className="form-label small fw-bold text-uppercase text-muted d-block">Téléphone</label>
+                      <p className="fw-medium">{hangar.Phone || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="form-label small fw-bold text-uppercase text-muted d-block">Code ICAO</label>
+                      <span className="badge bg-primary px-3 py-2" style={{ borderRadius: '8px' }}>{hangar.id_icao}</span>
                     </div>
                   </div>
                 </div>
-
-                {/* Information de mise à jour (Optionnel) */}
-                <div className="col-12 mt-3 text-center">
-                  <hr className="my-3 opacity-10" />
-                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>
-                    Dernière mise à jour : {new Date(hangar.date_maj).toLocaleDateString()}
-                  </p>
+              ) : (
+                <div className="animate__animated animate__fadeIn">
+                  {loading ? (
+                    <div className="text-center py-5">
+                      <div className="spinner-border text-primary" role="status"></div>
+                    </div>
+                  ) : certifications.length > 0 ? (
+                    <div className="table-responsive rounded-3 bg-white shadow-sm">
+                      <table className="table table-hover align-middle mb-0">
+                        <thead style={{ backgroundColor: '#f8f9fa' }}>
+                          <tr className="small text-uppercase text-muted">
+                            <th className="px-3 py-3">Numéro</th>
+                            <th>Autorité</th>
+                            <th>Pays</th>
+                            <th>Type</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {certifications.map((cert, index) => (
+                            <tr key={index}>
+                              <td className="px-3 py-3 fw-bold" style={{ color: 'var(--color-primary)' }}>{cert.agreement?.numero_agrement}</td>
+                              <td>
+                                <div className="fw-medium">{cert.agreement?.authorities?.name}</div>
+                                <div className="small text-muted">{cert.agreement?.authorities?.parent_authority}</div>
+                              </td>
+                              <td>{cert.agreement?.authorities?.country}</td>
+                              <td><span className="badge bg-light text-dark border small">{cert.maintenance_type}</span></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-5 bg-white rounded-3">
+                      <p className="text-muted mb-0">Aucun agrément spécifique trouvé.</p>
+                    </div>
+                  )}
                 </div>
-
-              </div>
+              )}
             </div>
 
-            {/* Footer avec boutons d'actions */}
-            <div className="modal-footer border-top-0 p-4 pt-0 d-flex justify-content-between">
+            <div className="modal-footer border-top-0 p-4 pt-0" style={{ backgroundColor: 'var(--color-light-bg)' }}>
+              <button className="btn btn-link text-decoration-none text-muted fw-bold" onClick={onClose}>Fermer</button>
+              
+              {/* CE BOUTON APPELLE MAINTENANT LA PROP CORRECTEMENT */}
               <button 
-                type="button" 
-                className="btn btn-light px-4 py-2 fw-medium rounded-pill" 
-                onClick={onClose}
+                className="btn btn-accent-pro btn-lg px-5 text-white shadow-sm rounded-pill"
+                style={{ fontSize: '0.9rem' }}
+                onClick={onQuoteRequest} 
               >
-                Retour
+                Demander un devis
               </button>
-              <div className="d-flex gap-2">
-                <a 
-                  href={`mailto:${hangar.adresse_mail}?subject=Demande d'informations - Let Me Check`} 
-                  className="btn btn-accent-pro px-4 py-2 fw-bold text-white rounded-pill shadow-sm"
-                >
-                  ✉️ Contacter l'atelier
-                </a>
-              </div>
             </div>
-
           </div>
         </div>
       </div>
