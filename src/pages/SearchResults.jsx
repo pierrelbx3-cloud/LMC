@@ -15,6 +15,30 @@ const DefaultIcon = L.icon({
   popupAnchor: [1, -34],
 });
 
+/**
+ * Composant interne pour les étoiles Or (avec support demi-étoiles)
+ */
+const AdminStarRating = ({ rating }) => {
+  const value = parseFloat(rating) || 0;
+  return (
+    <div className="d-flex gap-1 align-items-center mb-1">
+      {[1, 2, 3, 4, 5].map((star) => {
+        if (value >= star) {
+          return <span key={star} style={{ color: '#FFD700', fontSize: '1rem' }}>★</span>;
+        } else if (value >= star - 0.5) {
+          return (
+            <span key={star} style={{ position: 'relative', fontSize: '1rem', color: '#e4e5e9' }}>
+              <span style={{ position: 'absolute', overflow: 'hidden', width: '50%', color: '#FFD700' }}>★</span>
+              ★
+            </span>
+          );
+        }
+        return <span key={star} style={{ color: '#e4e5e9', fontSize: '1rem' }}>★</span>;
+      })}
+    </div>
+  );
+};
+
 function MapResizer() {
   const map = useMap();
   useEffect(() => {
@@ -46,11 +70,10 @@ export default function SearchResults({
 }) {
   const [activeCoords, setActiveCoords] = useState(null);
 
-  // On ne montre les résultats qu'en phase 2
   if (searchPhase !== 2) return null;
 
   return (
-    <div className="container-fluid mt-4 mt-lg-5 px-0">
+    <div className="container-fluid mt-4 mt-lg-5 px-0 animate__animated animate__fadeIn">
       <div className="row g-0">
         
         {/* === COLONNE CARTE (DROITE) === */}
@@ -87,7 +110,7 @@ export default function SearchResults({
                       <div className="text-center p-1">
                         <strong className="d-block mb-2">{hangar.nom_hangar}</strong>
                         <button 
-                          className="btn btn-primary btn-sm w-100"
+                          className="btn btn-accent-pro btn-sm w-100 text-white"
                           onClick={() => onViewDetail(hangar)}
                         >
                           Voir Détails
@@ -105,15 +128,15 @@ export default function SearchResults({
         </div>
 
         {/* === COLONNE LISTE DES RÉSULTATS (GAUCHE) === */}
-        <div className="col-lg-7 px-4" style={{ maxHeight: '85vh', overflowY: 'auto' }}>
-          <div className="d-flex justify-content-between align-items-center mb-4">
+        <div className="col-lg-7 px-3 px-lg-4" style={{ maxHeight: '85vh', overflowY: 'auto' }}>
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
             <h4 className="fw-bold m-0" style={{ color: 'var(--color-primary)' }}>
               {searchResults.length} Ateliers certifiés
             </h4>
-            <div className="d-flex gap-2">
-              <span className="badge bg-light text-dark border p-2">{selectedModel}</span>
+            <div className="d-flex flex-wrap gap-2">
+              <span className="badge bg-light text-dark border p-2 shadow-sm">{selectedModel}</span>
               {selectedService && (
-                 <span className="badge bg-primary-subtle text-primary border p-2">{selectedService}</span>
+                 <span className="badge bg-primary-subtle text-primary border p-2 shadow-sm">{selectedService}</span>
               )}
             </div>
           </div>
@@ -123,9 +146,8 @@ export default function SearchResults({
               const lat = hangar.airports?.lat;
               const lon = hangar.airports?.lon;
               const hasCoords = lat && lon;
-
-              // Extraction de la maintenance spécifique depuis hangar_triple si disponible
-              // Note: hangar.hangar_triple est un tableau car c'est une relation hasMany
+              
+              // On récupère le type de maintenance spécifique au triple lien
               const specMaintenance = hangar.hangar_triple?.[0]?.maintenance_type;
 
               return (
@@ -135,18 +157,24 @@ export default function SearchResults({
                   style={{ 
                     borderRadius: '15px', 
                     cursor: 'pointer',
-                    border: activeCoords?.[0] === lat ? '2px solid var(--color-primary)' : 'none',
-                    transition: 'all 0.2s ease-in-out'
+                    border: activeCoords?.[0] === lat ? '2px solid var(--color-accent)' : 'none',
+                    transition: 'all 0.2s ease-in-out',
+                    backgroundColor: '#fff'
                   }}
                   onClick={() => hasCoords && setActiveCoords([lat, lon])}
                 >
                   <div className="card-body p-4">
                     <div className="d-flex justify-content-between align-items-start">
                       <div>
-                        <h5 className="fw-bold mb-1" style={{ color: 'var(--color-primary)' }}>{hangar.nom_hangar}</h5>
+                        {/* Affichage des étoiles en Or */}
+                        <AdminStarRating rating={hangar.rating_admin} />
+                        
+                        <h5 className="fw-bold mb-1" style={{ color: 'var(--color-primary)' }}>
+                          {hangar.nom_hangar}
+                        </h5>
                         <p className="text-muted small mb-2">📍 {hangar.ville}, {hangar.pays}</p>
                       </div>
-                      <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+                      <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
                         {hangar.id_icao}
                       </span>
                     </div>
@@ -162,22 +190,29 @@ export default function SearchResults({
                       )}
                     </div>
 
-                    <div className="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                    <div className="mt-3 pt-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
                       <div className="text-success small fw-bold">
                         <span className="me-1">●</span> Station agréée
                       </div>
-                      <div className="d-flex gap-2">
+                      <div className="d-flex gap-2 w-100 w-sm-auto">
                         <button 
-                          className="btn btn-outline-secondary btn-sm px-3" 
-                          style={{ borderRadius: '8px' }}
+                          className="btn btn-outline-secondary btn-sm px-4 flex-grow-1" 
+                          style={{ borderRadius: '20px', fontWeight: '600' }}
                           onClick={(e) => {
                             e.stopPropagation();
                             onViewDetail(hangar);
                           }}
                         >
-                          Détails & Agréments
+                          Détails
                         </button>
-                        <button className="btn btn-primary btn-sm px-3" style={{ borderRadius: '8px' }}>
+                        <button 
+                          className="btn btn-accent-pro btn-sm px-4 text-white flex-grow-1 shadow-sm" 
+                          style={{ borderRadius: '20px', fontWeight: '600' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewDetail(hangar); 
+                          }}
+                        >
                           Contacter
                         </button>
                       </div>

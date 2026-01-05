@@ -1,7 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-// AJOUT DE onQuoteRequest DANS LES PROPS CI-DESSOUS
+/**
+ * Composant interne StarRating optimisé (Couleur Or + Demi-étoiles)
+ */
+const StarRating = ({ rating }) => {
+  const value = parseFloat(rating) || 0;
+
+  return (
+    <div className="d-flex gap-1 align-items-center" title={`Note: ${value}/5`}>
+      {[1, 2, 3, 4, 5].map((star) => {
+        if (value >= star) {
+          // Étoile pleine Or
+          return <span key={star} style={{ color: '#FFD700', fontSize: '1.5rem' }}>★</span>;
+        } else if (value >= star - 0.5) {
+          // Demi-étoile Or
+          return (
+            <span key={star} style={{ position: 'relative', fontSize: '1.5rem', color: '#e4e5e9' }}>
+              <span style={{ position: 'absolute', overflow: 'hidden', width: '50%', color: '#FFD700' }}>★</span>
+              ★
+            </span>
+          );
+        }
+        // Étoile vide grise
+        return <span key={star} style={{ color: '#e4e5e9', fontSize: '1.5rem' }}>★</span>;
+      })}
+      {value > 0 && <span className="ms-2 fw-bold text-muted small">({value}/5)</span>}
+    </div>
+  );
+};
+
 export default function ResultDetailModal({ show, onClose, hangar, selectedTypeId, onQuoteRequest }) {
   const [activeTab, setActiveTab] = useState('admin'); 
   const [certifications, setCertifications] = useState([]);
@@ -46,6 +74,7 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
 
   return (
     <>
+      {/* Overlay avec flou */}
       <div 
         className="modal-backdrop fade show" 
         onClick={onClose} 
@@ -53,42 +82,51 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
       ></div>
 
       <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
-        <div className="modal-dialog modal-lg modal-dialog-centered">
-          <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '15px', overflow: 'hidden' }}>
+        <div className="modal-dialog modal-lg modal-dialog-centered px-3">
+          <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }}>
             
-            <div className="p-4 border-bottom" style={{ backgroundColor: '#ffffff' }}>
-              <div className="d-flex justify-content-between align-items-center mb-3">
+            {/* Header avec Onglets Style "Let Me Check" */}
+            <div className="p-4 border-bottom bg-white">
+              <div className="d-flex justify-content-between align-items-center mb-4">
                 <h3 className="h5 fw-bold mb-0" style={{ color: 'var(--color-primary)' }}>
                   {hangar.nom_hangar}
                 </h3>
                 <button type="button" className="btn-close" onClick={onClose}></button>
               </div>
 
-              <div className="d-flex gap-3 border-bottom-0">
+              <div className="d-flex gap-2 overflow-auto pb-2">
                 <button 
-                  className={`btn btn-sm px-4 py-2 rounded-pill fw-bold transition-all ${activeTab === 'admin' ? 'btn-accent-pro text-white shadow' : 'btn-light text-muted'}`}
+                  className={`btn btn-sm px-4 py-2 rounded-pill fw-bold transition-all whitespace-nowrap ${activeTab === 'admin' ? 'btn-accent-pro text-white shadow' : 'btn-light text-muted'}`}
                   onClick={() => setActiveTab('admin')}
                 >
                   📍 Informations
                 </button>
                 <button 
-                  className={`btn btn-sm px-4 py-2 rounded-pill fw-bold transition-all ${activeTab === 'agreements' ? 'active btn-accent-pro text-white shadow' : 'btn-light text-muted'}`}
+                  className={`btn btn-sm px-4 py-2 rounded-pill fw-bold transition-all whitespace-nowrap ${activeTab === 'agreements' ? 'btn-accent-pro text-white shadow' : 'btn-light text-muted'}`}
                   onClick={() => setActiveTab('agreements')}
                 >
                   📜 Agréments
                 </button>
+                <button 
+                  className={`btn btn-sm px-4 py-2 rounded-pill fw-bold transition-all whitespace-nowrap ${activeTab === 'rating' ? 'btn-accent-pro text-white shadow' : 'btn-light text-muted'}`}
+                  onClick={() => setActiveTab('rating')}
+                >
+                  ⭐ Évaluation
+                </button>
               </div>
             </div>
 
-            <div className="modal-body p-4" style={{ backgroundColor: 'var(--color-light-bg)', minHeight: '300px' }}>
+            {/* Corps de la Modal */}
+            <div className="modal-body p-4" style={{ backgroundColor: 'var(--color-light-bg)', minHeight: '320px' }}>
               
-              {activeTab === 'admin' ? (
+              {/* ONGLET 1 : ADMIN */}
+              {activeTab === 'admin' && (
                 <div className="row g-4 animate__animated animate__fadeIn">
                   <div className="col-md-6">
                     <div className="mb-4">
                       <label className="form-label small fw-bold text-uppercase text-muted d-block">Adresse Physique</label>
-                      <p className="fw-medium mb-0">{hangar.Adresse || 'N/A'}</p>
-                      <p className="text-muted small">{hangar.Zip_code} {hangar.ville}, {hangar.pays}</p>
+                      <p className="fw-medium mb-0">{hangar["Adresse"] || 'N/A'}</p>
+                      <p className="text-muted small">{hangar["Zip_code"]} {hangar.ville}, {hangar.pays}</p>
                     </div>
                     <div>
                       <label className="form-label small fw-bold text-uppercase text-muted d-block">Contact Email</label>
@@ -98,15 +136,18 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
                   <div className="col-md-6">
                     <div className="mb-4">
                       <label className="form-label small fw-bold text-uppercase text-muted d-block">Téléphone</label>
-                      <p className="fw-medium">{hangar.Phone || 'N/A'}</p>
+                      <p className="fw-medium">{hangar["Phone"] || 'N/A'}</p>
                     </div>
                     <div>
-                      <label className="form-label small fw-bold text-uppercase text-muted d-block">Code ICAO</label>
+                      <label className="form-label small fw-bold text-uppercase text-muted d-block">Code ICAO Aéroport</label>
                       <span className="badge bg-primary px-3 py-2" style={{ borderRadius: '8px' }}>{hangar.id_icao}</span>
                     </div>
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {/* ONGLET 2 : AGRÉMENTS */}
+              {activeTab === 'agreements' && (
                 <div className="animate__animated animate__fadeIn">
                   {loading ? (
                     <div className="text-center py-5">
@@ -117,7 +158,7 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
                       <table className="table table-hover align-middle mb-0">
                         <thead style={{ backgroundColor: '#f8f9fa' }}>
                           <tr className="small text-uppercase text-muted">
-                            <th className="px-3 py-3">Numéro</th>
+                            <th className="px-3 py-3">Agrément</th>
                             <th>Autorité</th>
                             <th>Pays</th>
                             <th>Type</th>
@@ -126,7 +167,9 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
                         <tbody>
                           {certifications.map((cert, index) => (
                             <tr key={index}>
-                              <td className="px-3 py-3 fw-bold" style={{ color: 'var(--color-primary)' }}>{cert.agreement?.numero_agrement}</td>
+                              <td className="px-3 py-3 fw-bold" style={{ color: 'var(--color-primary)' }}>
+                                {cert.agreement?.numero_agrement}
+                              </td>
                               <td>
                                 <div className="fw-medium">{cert.agreement?.authorities?.name}</div>
                                 <div className="small text-muted">{cert.agreement?.authorities?.parent_authority}</div>
@@ -139,21 +182,35 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
                       </table>
                     </div>
                   ) : (
-                    <div className="text-center py-5 bg-white rounded-3">
-                      <p className="text-muted mb-0">Aucun agrément spécifique trouvé.</p>
+                    <div className="text-center py-5 bg-white rounded-3 shadow-sm">
+                      <p className="text-muted mb-0">Aucun agrément spécifique trouvé pour ce modèle d'appareil.</p>
                     </div>
                   )}
                 </div>
               )}
+
+              {/* ONGLET 3 : ÉVALUATION ADMIN */}
+              {activeTab === 'rating' && (
+                <div className="animate__animated animate__fadeIn">
+                  <div className="card border-0 shadow-sm p-5 text-center bg-white rounded-4">
+                    <label className="form-label small fw-bold text-uppercase text-muted d-block mb-3">Expertise "Let Me Check"</label>
+                    <div className="d-flex justify-content-center mb-4">
+                      <StarRating rating={hangar.rating_admin} />
+                    </div>
+                    <p className="text-muted px-lg-4 mb-0">
+                      Cette note reflète l'expertise technique, la réactivité constatée et la qualité globale des infrastructures de cet atelier, certifiées par nos services.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="modal-footer border-top-0 p-4 pt-0" style={{ backgroundColor: 'var(--color-light-bg)' }}>
+            {/* Footer */}
+            <div className="modal-footer border-top-0 p-4 pt-0 bg-light-bg justify-content-between">
               <button className="btn btn-link text-decoration-none text-muted fw-bold" onClick={onClose}>Fermer</button>
-              
-              {/* CE BOUTON APPELLE MAINTENANT LA PROP CORRECTEMENT */}
               <button 
-                className="btn btn-accent-pro btn-lg px-5 text-white shadow-sm rounded-pill"
-                style={{ fontSize: '0.9rem' }}
+                className="btn btn-accent-pro btn-lg px-5 text-white shadow-sm rounded-pill animate__animated animate__pulse animate__infinite"
+                style={{ fontSize: '0.95rem' }}
                 onClick={onQuoteRequest} 
               >
                 Demander un devis

@@ -4,7 +4,6 @@ import { useSearchData } from './useSearchData';
 import SearchForm from './SearchForm';
 import SearchResults from './SearchResults';
 import ResultDetailModal from './ResultDetailModal'; 
-// IMPORT DU NOUVEAU COMPOSANT FORMULAIRE
 import QuoteRequestModal from './QuoteRequestModal'; 
 
 export default function SearchComponent() {
@@ -48,13 +47,11 @@ export default function SearchComponent() {
     setShowQuoteModal(false);
   };
 
-  // Ouverture de la modal de détails
   const handleOpenModal = (hangar) => {
     setSelectedHangar(hangar);
     setShowModal(true);
   };
 
-  // Transition : Ferme les détails et ouvre le formulaire de devis
   const handleOpenQuoteRequest = () => {
     setShowModal(false); 
     setShowQuoteModal(true);
@@ -77,39 +74,56 @@ export default function SearchComponent() {
     }
 
     try {
+      let finalData = [];
+
       if (searchPhase === 1) {
+        // PHASE 1 : Recherche par Type Avion
         const { data, error: err } = await supabase
           .from('hangars')
           .select(`
             id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail, adresse_mail1,
-            Adresse, Zip_code, Phone,
-            hangar_triple!inner(id_type),
+            "Adresse", "Zip_code", "Phone", rating_admin,
+            hangar_triple!inner(id_type, maintenance_type),
             airports (lat, lon, name) 
           `)
           .eq('hangar_triple.id_type', typeAvionId);
 
         if (err) throw err;
-        setSearchResults(data);
+        finalData = data;
         setSearchPhase(2);
 
       } else {
+        // PHASE 2 : Filtre supplémentaire par Service
         const serviceObj = services.find(s => s.name === selectedService);
         
         const { data, error: err } = await supabase
           .from('hangars')
           .select(`
             id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail, adresse_mail1,
-            Adresse, Zip_code, Phone,
+            "Adresse", "Zip_code", "Phone", rating_admin,
             hangar_service!inner(id_service),
-            hangar_triple!inner(id_type),
+            hangar_triple!inner(id_type, maintenance_type),
             airports (lat, lon, name)
           `)
           .eq('hangar_triple.id_type', typeAvionId)
           .eq('hangar_service.id_service', serviceObj?.id);
 
         if (err) throw err;
-        setSearchResults(data);
+        finalData = data;
       }
+
+      setSearchResults(finalData);
+
+      // --- LOGS DE RECHERCHE ---
+      // On enregistre la recherche pour vos statistiques admin
+      await supabase.from('search_logs').insert([{
+        category: selectedCategory,
+        tc_holder: selectedTcHolder,
+        model_avion: selectedModel,
+        service_requested: selectedService || 'Initial Search',
+        results_count: finalData ? finalData.length : 0
+      }]);
+
     } catch (err) {
       console.error("Erreur lors de la recherche:", err);
       alert("Une erreur est survenue lors de la récupération des données.");
@@ -118,7 +132,6 @@ export default function SearchComponent() {
     }
   };
 
-  // Extraction de l'ID type pour la modal
   const currentTypeId = modelsRaw.find(m => m.model_avion === selectedModel)?.id_type;
 
   return (
@@ -156,16 +169,14 @@ export default function SearchComponent() {
         onViewDetail={handleOpenModal}
       />
 
-      {/* MODAL 1 : DÉTAILS DU HANGAR ET AGRÉMENTS */}
       <ResultDetailModal 
         show={showModal} 
         onClose={() => setShowModal(false)} 
         hangar={selectedHangar}
         selectedTypeId={currentTypeId}
-        onQuoteRequest={handleOpenQuoteRequest} // La fonction de bascule
+        onQuoteRequest={handleOpenQuoteRequest} 
       />
 
-      {/* MODAL 2 : FORMULAIRE DE DEVIS (GOOGLE SHEETS) */}
       <QuoteRequestModal 
         show={showQuoteModal}
         onClose={() => setShowQuoteModal(false)}
