@@ -76,13 +76,17 @@ export default function SearchComponent() {
     try {
       let finalData = [];
 
-      if (searchPhase === 1) {
-        // PHASE 1 : Recherche par Type Avion
+      // Si un service est sélectionné, on passe directement en logique Phase 2, peu importe l'état précédent
+      const isServiceSearch = selectedService !== '' || searchPhase === 2;
+
+      if (!isServiceSearch) {
+        // --- PHASE 1 : Recherche par Type Avion uniquement ---
+        // CORRECTION ICI : Retrait des majuscules et guillemets pour adresse, zip_code, phone
         const { data, error: err } = await supabase
           .from('hangars')
           .select(`
             id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail, adresse_mail1,
-            "Adresse", "Zip_code", "Phone", rating_admin,
+            adresse, zip_code, phone, rating_admin,
             hangar_triple!inner(id_type, maintenance_type),
             airports (lat, lon, name) 
           `)
@@ -90,23 +94,32 @@ export default function SearchComponent() {
 
         if (err) throw err;
         finalData = data;
-        setSearchPhase(2);
+        setSearchPhase(2); // On prépare la prochaine étape
 
       } else {
-        // PHASE 2 : Filtre supplémentaire par Service
+        // --- PHASE 2 : Filtre supplémentaire par Service ---
         const serviceObj = services.find(s => s.name === selectedService);
         
-        const { data, error: err } = await supabase
+        // Sécurité : si le service n'est pas trouvé (bug UI), on évite de planter la requête
+        const serviceId = serviceObj ? serviceObj.id : null;
+
+        let query = supabase
           .from('hangars')
           .select(`
             id_hangar, nom_hangar, pays, ville, id_icao, adresse_mail, adresse_mail1,
-            "Adresse", "Zip_code", "Phone", rating_admin,
+            adresse, zip_code, phone, rating_admin,
             hangar_service!inner(id_service),
             hangar_triple!inner(id_type, maintenance_type),
             airports (lat, lon, name)
           `)
-          .eq('hangar_triple.id_type', typeAvionId)
-          .eq('hangar_service.id_service', serviceObj?.id);
+          .eq('hangar_triple.id_type', typeAvionId);
+
+        // On n'applique le filtre service que si on a un ID valide
+        if (serviceId) {
+            query = query.eq('hangar_service.id_service', serviceId);
+        }
+
+        const { data, error: err } = await query;
 
         if (err) throw err;
         finalData = data;
@@ -115,7 +128,6 @@ export default function SearchComponent() {
       setSearchResults(finalData);
 
       // --- LOGS DE RECHERCHE ---
-      // On enregistre la recherche pour vos statistiques admin
       await supabase.from('search_logs').insert([{
         category: selectedCategory,
         tc_holder: selectedTcHolder,

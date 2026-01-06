@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^14.4.3",
     "bootstrap": "^5.3.3",
     "buffer": "^6.0.3",
+    "framer-motion": "^12.24.0",
     "leaflet": "^1.9.4",
     "maplibre-gl": "^4.7.1",
     "process": "^0.11.10",
