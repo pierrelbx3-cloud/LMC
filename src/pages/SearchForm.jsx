@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../supabaseClient'; 
 
 export default function SearchForm({
   searchPhase,
@@ -8,19 +9,24 @@ export default function SearchForm({
   selectedService, setSelectedService,
   selectedDate, setSelectedDate,
   productCategories, tcHolders, 
-  filteredModels, // Modèles filtrés par les sélecteurs
-  allModels,      // <-- LA LISTE COMPLÈTE (à passer depuis le parent)
+  filteredModels,
+  // allModels, <--- PLUS BESOIN DE CA (trop lourd)
   handleSearch, handleReset, loading
 }) {
   
   const [modelSearchTerm, setModelSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState([]); // <-- State pour les résultats SQL
   const [showSuggestions, setShowSuggestions] = useState(false);
   const wrapperRef = useRef(null);
 
-  // Sync du texte si le modèle change
+  // Sync du texte si le modèle est sélectionné via les listes déroulantes
   useEffect(() => {
-    if (!selectedModel) setModelSearchTerm("");
-    else setModelSearchTerm(selectedModel);
+    if (!selectedModel) {
+      // Si on reset, on vide le champ texte seulement si l'utilisateur n'est pas en train de taper
+      if (!showSuggestions) setModelSearchTerm("");
+    } else {
+      setModelSearchTerm(selectedModel);
+    }
   }, [selectedModel]);
 
   // Fermeture des suggestions au clic extérieur
@@ -35,22 +41,66 @@ export default function SearchForm({
   }, []);
 
   /**
-   * LOGIQUE DE RECHERCHE DIRECTE (CORRIGÉE)
-   * Si l'utilisateur tape sans avoir choisi de filtres, on cherche dans allModels.
+   * --- OPTIMISATION ---
+   * Effect qui écoute la frappe utilisateur.
+   * Utilise un DEBOUNCE (délai) pour ne pas spammer la base de données.
    */
-  const dataToSearch = (allModels && allModels.length > 0) ? allModels : filteredModels;
-  
-  const suggestions = (dataToSearch || []).filter(m => {
-    const term = modelSearchTerm.toLowerCase().trim();
-    return term.length >= 2 && m.name.toLowerCase().includes(term);
-  }).slice(0, 8);
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      // On ne cherche que si l'utilisateur a tapé au moins 2 caractères
+      // ET qu'il est en train de modifier le champ (suggestions ouvertes)
+      if (modelSearchTerm.length >= 2 && showSuggestions) {
+        try {
+          // Appel de la fonction SQL 'search_models' créée à l'étape 1
+          const { data, error } = await supabase
+            .rpc('search_models', { search_text: modelSearchTerm });
 
+          if (error) throw error;
+          setSuggestions(data || []);
+        } catch (error) {
+          console.error('Erreur autocomplétion:', error);
+        }
+      } else {
+        setSuggestions([]);
+      }
+    }, 300); // Délai de 300ms avant d'envoyer la requête
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [modelSearchTerm, showSuggestions]);
+
+
+  const recordSearchLog = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from('search_logs').insert([
+        {
+          user_id: user ? user.id : null,
+          model_name: selectedModel,
+          category_id: selectedCategory || null,
+          tc_holder_id: selectedTcHolder || null,
+          service_type: selectedService || null,
+          urgency_type: selectedDate || null
+        }
+      ]);
+    } catch (err) {
+      console.error("Erreur interne log:", err);
+    }
+  };
+
+  const onFormSubmit = (e) => {
+    recordSearchLog(); 
+    handleSearch(e);
+  };
+
+  // Sélection d'un modèle depuis l'autocomplétion
   const selectModel = (model) => {
+    // Note: model.name vient de la fonction SQL (alias 'name')
     setSelectedModel(model.name);
     setModelSearchTerm(model.name);
     setShowSuggestions(false);
-    // On essaye de pré-remplir les filtres si la donnée est présente
-    if (model.id_category) setSelectedCategory(model.id_category);
+    
+    // Auto-fill de la catégorie si disponible (alias 'category_id')
+    if (model.category_id) setSelectedCategory(model.category_id);
   };
 
   const stepStyle = (step) => ({
@@ -63,7 +113,6 @@ export default function SearchForm({
   return (
     <div className="card shadow-lg border-0 p-0 overflow-hidden mb-4 mx-auto" style={{ borderRadius: '18px', maxWidth: '900px' }}>
       
-      {/* HEADER AVEC RAPPEL MODÈLE */}
       <div className="p-3 border-bottom bg-white">
         <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div className="d-flex align-items-center">
@@ -82,12 +131,11 @@ export default function SearchForm({
       </div>
 
       <div className="card-body p-3 p-md-4" style={{ backgroundColor: 'var(--color-light-bg)' }}>
-        <form onSubmit={handleSearch}>
+        <form onSubmit={onFormSubmit}>
           <div className="row g-3">
             
             {searchPhase === 1 && (
               <>
-                {/* --- 1. RECHERCHE TEXTE (DIRECTE) --- */}
                 <div className="col-12" ref={wrapperRef} style={{ position: 'relative' }}>
                   <label className="form-label tiny-label fw-bold text-muted mb-1">🚀 RECHERCHE DIRECTE</label>
                   <div className="input-group shadow-sm rounded-3 overflow-hidden">
@@ -97,24 +145,45 @@ export default function SearchForm({
                       className="form-control border-0 py-2 shadow-none"
                       placeholder="Tapez le nom de l'avion (ex: A320)..."
                       value={modelSearchTerm}
-                      onChange={(e) => { setModelSearchTerm(e.target.value); setShowSuggestions(true); }}
-                      onFocus={() => setShowSuggestions(true)}
+                      onChange={(e) => { 
+                        setModelSearchTerm(e.target.value); 
+                        setShowSuggestions(true); 
+                      }}
+                      onFocus={() => {
+                        if(modelSearchTerm.length >= 2) setShowSuggestions(true);
+                      }}
                       autoComplete="off"
                     />
                     {modelSearchTerm && (
-                      <button className="btn bg-white border-0 py-0" type="button" onClick={() => {setSelectedModel(""); setModelSearchTerm("");}}>✕</button>
+                      <button className="btn bg-white border-0 py-0" type="button" onClick={() => {
+                        setSelectedModel(""); 
+                        setModelSearchTerm("");
+                        setSuggestions([]);
+                      }}>✕</button>
                     )}
                   </div>
 
+                  {/* Affichage des suggestions SQL */}
                   {showSuggestions && suggestions.length > 0 && (
                     <div className="list-group shadow-lg position-absolute w-100" 
                          style={{ top: '100%', left: 0, zIndex: 1060, marginTop: '5px', borderRadius: '10px', overflow: 'hidden' }}>
-                      {suggestions.map(m => (
-                        <button key={m.id} type="button" className="list-group-item list-group-item-action py-2 fw-bold border-0 text-start" onClick={() => selectModel(m)}>
+                      {suggestions.map((m, index) => (
+                        <button 
+                          key={index} // Utilisation de l'index ou m.id si dispo
+                          type="button" 
+                          className="list-group-item list-group-item-action py-2 fw-bold border-0 text-start" 
+                          onClick={() => selectModel(m)}
+                        >
                           ✈️ {m.name}
                         </button>
                       ))}
                     </div>
+                  )}
+                  {/* Message si aucun résultat (Optionnel) */}
+                  {showSuggestions && modelSearchTerm.length >= 2 && suggestions.length === 0 && (
+                     <div className="position-absolute w-100 p-2 bg-white shadow-sm text-muted small text-center rounded-bottom" style={{zIndex: 1060}}>
+                       Aucun modèle trouvé
+                     </div>
                   )}
                 </div>
 
@@ -122,7 +191,6 @@ export default function SearchForm({
                    <small className="text-muted fw-bold" style={{ fontSize: '0.65rem', opacity: 0.5 }}>OU PARCOURS GUIDÉ</small>
                 </div>
 
-                {/* --- 2. FILTRES CLASSIQUES --- */}
                 <div className="col-md-4">
                   <label className="form-label tiny-label fw-bold text-muted">CATÉGORIE</label>
                   <select className="form-select border-0 shadow-sm py-2 small" value={selectedCategory} onChange={e => {setSelectedCategory(e.target.value); setSelectedTcHolder(""); setSelectedModel("");}}>
@@ -149,7 +217,6 @@ export default function SearchForm({
               </>
             )}
 
-            {/* --- PHASE 2 : INTERVENTION --- */}
             {searchPhase === 2 && (
               <div className="row g-3 mt-1 animate__animated animate__fadeIn">
                 <div className="col-md-6">
@@ -183,7 +250,6 @@ export default function SearchForm({
               </div>
             )}
 
-            {/* FOOTER ACTION */}
             <div className="col-12 text-center mt-4 pt-3 border-top">
               <div className="d-flex flex-column align-items-center gap-2">
                 <button type="submit" className="btn btn-accent-pro px-5 py-2 fw-bold rounded-pill shadow" 
@@ -192,7 +258,6 @@ export default function SearchForm({
                   {loading ? "..." : (searchPhase === 1 ? 'VÉRIFIER DISPONIBILITÉ' : 'RECHERCHER')}
                 </button>
                 
-                {/* BOUTON RÉINITIALISER BIEN VISIBLE */}
                 <button type="button" onClick={handleReset} className="btn btn-link text-muted p-0 text-decoration-none small" style={{ fontSize: '0.8rem' }}>
                   🔄 Recommencer / Changer d'avion
                 </button>

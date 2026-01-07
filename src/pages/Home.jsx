@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion'; // Import de la librairie d'animation
+import { motion } from 'framer-motion'; 
+// Assurez-vous que le chemin est bon selon où vous avez créé le fichier
+import FaqSection from '../components/FaqSection'; 
 
 const BACKGROUND_IMAGE_URL = '/background.png'; 
 const CAROUSEL_IMAGE_1 = '/home1.png';
@@ -18,7 +20,6 @@ export default function Home() {
 
   // --- CONFIGURATION DES ANIMATIONS (VARIANTS) ---
   
-  // Animation simple : Apparition en douceur vers le haut
   const fadeInUp = {
     hidden: { opacity: 0, y: 40 },
     visible: { 
@@ -28,18 +29,16 @@ export default function Home() {
     }
   };
 
-  // Animation pour les conteneurs (pour décaler l'apparition des enfants)
   const containerStagger = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2 // Délai de 0.2s entre chaque enfant
+        staggerChildren: 0.2
       }
     }
   };
 
-  // Animation enfant pour les listes (cartes avantages)
   const itemFadeIn = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
@@ -64,7 +63,6 @@ export default function Home() {
           marginLeft: 'calc(50% - 50vw)', 
         }} 
       >
-        {/* 🎨 CALQUE D'OVERLAY */}
         <div 
           className="position-absolute top-0 start-0 w-100 h-100"
           style={{
@@ -73,13 +71,12 @@ export default function Home() {
           }}
         ></div>
 
-        {/* 📝 CONTENU : ANIMÉ AVEC FRAMER MOTION */}
         <motion.div 
           className="container-fluid py-5 h-100 d-flex flex-column justify-content-end align-items-center position-relative" 
           style={{ zIndex: 2 }}
           initial="hidden"
           animate="visible"
-          variants={fadeInUp} // Applique l'animation au chargement
+          variants={fadeInUp}
         >
           <div className="mb-5 d-grid gap-3 d-sm-flex justify-content-sm-center">
             
@@ -102,14 +99,14 @@ export default function Home() {
         </motion.div>
       </div>
       
-      {/* --- CARTE AVEC CAPTIONS --- */}
+      {/* --- CARTE HERO CAPTION --- */}
       <div className="container mt-5">
         <motion.div 
           className="card p-5 border-0 shadow-lg text-center" 
           style={{ backgroundColor: 'var(--color-primary)' }}
           initial="hidden"
-          whileInView="visible" // S'anime quand on scroll dessus
-          viewport={{ once: true, margin: "-100px" }} // Joue une seule fois
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
           variants={fadeInUp}
         >
           <p 
@@ -127,7 +124,7 @@ export default function Home() {
         </motion.div>
       </div>
       
-      {/* 🎠 CARROUSEL D'IMAGES/PRODUITS */}
+      {/* 🎠 CARROUSEL */}
       <motion.div 
         className="container my-5"
         initial={{ opacity: 0 }}
@@ -138,7 +135,6 @@ export default function Home() {
         <h2 className="text-center mb-4 fw-bold text-dark display-6">Découvrez nos Partenaires Premium</h2>
         
         <div id="carouselExampleIndicators" className="carousel slide shadow-lg rounded-3 overflow-hidden" data-bs-ride="carousel">
-          
           <div className="carousel-indicators">
             <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1"></button>
             <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
@@ -179,7 +175,7 @@ export default function Home() {
         </div>
       </motion.div>
 
-      {/* --- SECTION AVANTAGES (ANIMATION EN CASCADE/STAGGER) --- */}
+      {/* --- SECTION AVANTAGES --- */}
       <div className="container mt-5 py-5">
         <motion.h2 
           className="text-center mb-5 fw-bold text-dark display-6"
@@ -203,7 +199,7 @@ export default function Home() {
           <motion.div className="col-md-4" variants={itemFadeIn}>
             <motion.div 
               className="card h-100 p-4 border-0 shadow-lg text-center transition-hover advantage-card"
-              whileHover={{ y: -10 }} // Légère levée au survol
+              whileHover={{ y: -10 }} 
             >
               <div className="card-body">
                 <span className="fs-1 mb-3 d-block" style={{ color: 'var(--color-secondary)' }}>
@@ -249,6 +245,18 @@ export default function Home() {
 
         </motion.div>
       </div>
+
+      
+
+      {/* ❓ SECTION FAQ (NOUVELLE INTÉGRATION) */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+      >
+        <FaqSection />
+      </motion.div>
         
       {/* 💼 SECTION APPEL A L'ACTION PRO */}
       <div className="container my-5">
