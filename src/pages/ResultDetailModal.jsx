@@ -11,10 +11,8 @@ const StarRating = ({ rating }) => {
     <div className="d-flex gap-1 align-items-center" title={`Note: ${value}/5`}>
       {[1, 2, 3, 4, 5].map((star) => {
         if (value >= star) {
-          // Étoile pleine Or
           return <span key={star} style={{ color: '#FFD700', fontSize: '1.5rem' }}>★</span>;
         } else if (value >= star - 0.5) {
-          // Demi-étoile Or
           return (
             <span key={star} style={{ position: 'relative', fontSize: '1.5rem', color: '#e4e5e9' }}>
               <span style={{ position: 'absolute', overflow: 'hidden', width: '50%', color: '#FFD700' }}>★</span>
@@ -22,7 +20,6 @@ const StarRating = ({ rating }) => {
             </span>
           );
         }
-        // Étoile vide grise
         return <span key={star} style={{ color: '#e4e5e9', fontSize: '1.5rem' }}>★</span>;
       })}
       {value > 0 && <span className="ms-2 fw-bold text-muted small">({value}/5)</span>}
@@ -74,7 +71,6 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
 
   return (
     <>
-      {/* Overlay avec flou */}
       <div 
         className="modal-backdrop fade show" 
         onClick={onClose} 
@@ -85,7 +81,6 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
         <div className="modal-dialog modal-lg modal-dialog-centered px-3">
           <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }}>
             
-            {/* Header avec Onglets Style "Let Me Check" */}
             <div className="p-4 border-bottom bg-white">
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <h3 className="h5 fw-bold mb-0" style={{ color: 'var(--color-primary)' }}>
@@ -116,17 +111,18 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
               </div>
             </div>
 
-            {/* Corps de la Modal */}
             <div className="modal-body p-4" style={{ backgroundColor: 'var(--color-light-bg)', minHeight: '320px' }}>
               
-              {/* ONGLET 1 : ADMIN */}
+              {/* ONGLET 1 : ADMIN (CORRIGÉ ICI) */}
               {activeTab === 'admin' && (
                 <div className="row g-4 animate__animated animate__fadeIn">
                   <div className="col-md-6">
                     <div className="mb-4">
                       <label className="form-label small fw-bold text-uppercase text-muted d-block">Adresse Physique</label>
-                      <p className="fw-medium mb-0">{hangar["Adresse"] || 'N/A'}</p>
-                      <p className="text-muted small">{hangar["Zip_code"]} {hangar.ville}, {hangar.pays}</p>
+                      {/* Correction des clés : adresse au lieu de Adresse */}
+                      <p className="fw-medium mb-0">{hangar.adresse || 'N/A'}</p>
+                      {/* Correction des clés : zip_code au lieu de Zip_code */}
+                      <p className="text-muted small">{hangar.zip_code} {hangar.ville}, {hangar.pays}</p>
                     </div>
                     <div>
                       <label className="form-label small fw-bold text-uppercase text-muted d-block">Contact Email</label>
@@ -136,7 +132,8 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
                   <div className="col-md-6">
                     <div className="mb-4">
                       <label className="form-label small fw-bold text-uppercase text-muted d-block">Téléphone</label>
-                      <p className="fw-medium">{hangar["Phone"] || 'N/A'}</p>
+                      {/* Correction des clés : phone au lieu de Phone */}
+                      <p className="fw-medium">{hangar.phone || 'N/A'}</p>
                     </div>
                     <div>
                       <label className="form-label small fw-bold text-uppercase text-muted d-block">Code ICAO Aéroport</label>
@@ -205,7 +202,6 @@ export default function ResultDetailModal({ show, onClose, hangar, selectedTypeI
               )}
             </div>
 
-            {/* Footer */}
             <div className="modal-footer border-top-0 p-4 pt-0 bg-light-bg justify-content-between">
               <button className="btn btn-link text-decoration-none text-muted fw-bold" onClick={onClose}>Fermer</button>
               <button 
