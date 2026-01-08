@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient'; 
+import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
 
 export default function SearchForm({
   searchPhase,
@@ -10,19 +11,18 @@ export default function SearchForm({
   selectedDate, setSelectedDate,
   productCategories, tcHolders, 
   filteredModels,
-  // allModels, <--- PLUS BESOIN DE CA (trop lourd)
   handleSearch, handleReset, loading
 }) {
+  const { t } = useTranslation(); // <--- HOOK
   
   const [modelSearchTerm, setModelSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState([]); // <-- State pour les résultats SQL
+  const [suggestions, setSuggestions] = useState([]); 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const wrapperRef = useRef(null);
 
   // Sync du texte si le modèle est sélectionné via les listes déroulantes
   useEffect(() => {
     if (!selectedModel) {
-      // Si on reset, on vide le champ texte seulement si l'utilisateur n'est pas en train de taper
       if (!showSuggestions) setModelSearchTerm("");
     } else {
       setModelSearchTerm(selectedModel);
@@ -42,16 +42,11 @@ export default function SearchForm({
 
   /**
    * --- OPTIMISATION ---
-   * Effect qui écoute la frappe utilisateur.
-   * Utilise un DEBOUNCE (délai) pour ne pas spammer la base de données.
    */
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
-      // On ne cherche que si l'utilisateur a tapé au moins 2 caractères
-      // ET qu'il est en train de modifier le champ (suggestions ouvertes)
       if (modelSearchTerm.length >= 2 && showSuggestions) {
         try {
-          // Appel de la fonction SQL 'search_models' créée à l'étape 1
           const { data, error } = await supabase
             .rpc('search_models', { search_text: modelSearchTerm });
 
@@ -63,7 +58,7 @@ export default function SearchForm({
       } else {
         setSuggestions([]);
       }
-    }, 300); // Délai de 300ms avant d'envoyer la requête
+    }, 300); 
 
     return () => clearTimeout(delayDebounceFn);
   }, [modelSearchTerm, showSuggestions]);
@@ -92,14 +87,10 @@ export default function SearchForm({
     handleSearch(e);
   };
 
-  // Sélection d'un modèle depuis l'autocomplétion
   const selectModel = (model) => {
-    // Note: model.name vient de la fonction SQL (alias 'name')
     setSelectedModel(model.name);
     setModelSearchTerm(model.name);
     setShowSuggestions(false);
-    
-    // Auto-fill de la catégorie si disponible (alias 'category_id')
     if (model.category_id) setSelectedCategory(model.category_id);
   };
 
@@ -110,6 +101,17 @@ export default function SearchForm({
     color: 'white', marginRight: '10px', fontSize: '0.85rem', fontWeight: 'bold'
   });
 
+  // --- DÉFINITION DES OPTIONS AVEC TRADUCTION ---
+  const serviceOptions = [
+    { id: 'Line', n: t('searchForm.serviceLine'), i: '🛠️' },
+    { id: 'Base', n: t('searchForm.serviceBase'), i: '🏢' }
+  ];
+
+  const urgencyOptions = [
+    { id: 'AOG', n: 'AOG', i: '🚨' }, // AOG est universel, mais on pourrait le traduire si besoin
+    { id: 'Planned', n: t('searchForm.urgencyPlanned'), i: '🗓️' }
+  ];
+
   return (
     <div className="card shadow-lg border-0 p-0 overflow-hidden mb-4 mx-auto" style={{ borderRadius: '18px', maxWidth: '900px' }}>
       
@@ -119,7 +121,7 @@ export default function SearchForm({
             <div style={stepStyle(1)}>1</div>
             <div style={stepStyle(2)}>2</div>
             <h3 className="h6 fw-bold mb-0 ms-1" style={{ color: 'var(--color-primary)' }}>
-              {searchPhase === 1 ? "Configuration" : "Intervention"}
+              {searchPhase === 1 ? t('searchForm.step1') : t('searchForm.step2')}
             </h3>
           </div>
           {selectedModel && (
@@ -137,13 +139,15 @@ export default function SearchForm({
             {searchPhase === 1 && (
               <>
                 <div className="col-12" ref={wrapperRef} style={{ position: 'relative' }}>
-                  <label className="form-label tiny-label fw-bold text-muted mb-1">🚀 RECHERCHE DIRECTE</label>
+                  <label className="form-label tiny-label fw-bold text-muted mb-1">
+                    {t('searchForm.directSearchLabel')}
+                  </label>
                   <div className="input-group shadow-sm rounded-3 overflow-hidden">
                     <span className="input-group-text bg-white border-0 py-2">🔍</span>
                     <input
                       type="text"
                       className="form-control border-0 py-2 shadow-none"
-                      placeholder="Tapez le nom de l'avion (ex: A320)..."
+                      placeholder={t('searchForm.placeholder')}
                       value={modelSearchTerm}
                       onChange={(e) => { 
                         setModelSearchTerm(e.target.value); 
@@ -163,13 +167,13 @@ export default function SearchForm({
                     )}
                   </div>
 
-                  {/* Affichage des suggestions SQL */}
+                  {/* Suggestions SQL */}
                   {showSuggestions && suggestions.length > 0 && (
                     <div className="list-group shadow-lg position-absolute w-100" 
                          style={{ top: '100%', left: 0, zIndex: 1060, marginTop: '5px', borderRadius: '10px', overflow: 'hidden' }}>
                       {suggestions.map((m, index) => (
                         <button 
-                          key={index} // Utilisation de l'index ou m.id si dispo
+                          key={index} 
                           type="button" 
                           className="list-group-item list-group-item-action py-2 fw-bold border-0 text-start" 
                           onClick={() => selectModel(m)}
@@ -179,38 +183,40 @@ export default function SearchForm({
                       ))}
                     </div>
                   )}
-                  {/* Message si aucun résultat (Optionnel) */}
+                  {/* Message aucun résultat */}
                   {showSuggestions && modelSearchTerm.length >= 2 && suggestions.length === 0 && (
                      <div className="position-absolute w-100 p-2 bg-white shadow-sm text-muted small text-center rounded-bottom" style={{zIndex: 1060}}>
-                       Aucun modèle trouvé
+                       {t('searchForm.noResult')}
                      </div>
                   )}
                 </div>
 
                 <div className="col-12 text-center py-1">
-                   <small className="text-muted fw-bold" style={{ fontSize: '0.65rem', opacity: 0.5 }}>OU PARCOURS GUIDÉ</small>
+                   <small className="text-muted fw-bold" style={{ fontSize: '0.65rem', opacity: 0.5 }}>
+                     {t('searchForm.orGuided')}
+                   </small>
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label tiny-label fw-bold text-muted">CATÉGORIE</label>
+                  <label className="form-label tiny-label fw-bold text-muted">{t('searchForm.category')}</label>
                   <select className="form-select border-0 shadow-sm py-2 small" value={selectedCategory} onChange={e => {setSelectedCategory(e.target.value); setSelectedTcHolder(""); setSelectedModel("");}}>
-                    <option value="">Toutes</option>
+                    <option value="">{t('searchForm.allCategories')}</option>
                     {productCategories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label tiny-label fw-bold text-muted">CONSTRUCTEUR</label>
+                  <label className="form-label tiny-label fw-bold text-muted">{t('searchForm.manufacturer')}</label>
                   <select className="form-select border-0 shadow-sm py-2 small" value={selectedTcHolder} onChange={e => {setSelectedTcHolder(e.target.value); setSelectedModel("");}} disabled={!selectedCategory}>
-                    <option value="">Tous</option>
+                    <option value="">{t('searchForm.allManufacturers')}</option>
                     {tcHolders?.map(tc => <option key={tc.id} value={tc.id}>{tc.name}</option>)}
                   </select>
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label tiny-label fw-bold text-muted">MODÈLE</label>
+                  <label className="form-label tiny-label fw-bold text-muted">{t('searchForm.model')}</label>
                   <select className="form-select border-0 shadow-sm py-2 small" value={selectedModel} onChange={e => setSelectedModel(e.target.value)} disabled={!selectedTcHolder}>
-                    <option value="">Sélectionner...</option>
+                    <option value="">{t('searchForm.select')}</option>
                     {filteredModels?.map(m => <option key={m.id} value={m.name}>{m.name}</option>)}
                   </select>
                 </div>
@@ -220,9 +226,11 @@ export default function SearchForm({
             {searchPhase === 2 && (
               <div className="row g-3 mt-1 animate__animated animate__fadeIn">
                 <div className="col-md-6">
-                  <label className="form-label tiny-label fw-bold text-muted mb-2 text-center d-block">🔧 PRESTATION</label>
+                  <label className="form-label tiny-label fw-bold text-muted mb-2 text-center d-block">
+                    {t('searchForm.serviceLabel')}
+                  </label>
                   <div className="row g-2">
-                    {[{id:'Line',n:'Line',i:'🛠️'},{id:'Base',n:'Base',i:'🏢'}].map(item => (
+                    {serviceOptions.map(item => (
                       <div className="col-6" key={item.id}>
                         <button type="button" 
                           className={`btn w-100 py-2 border-0 shadow-sm rounded-3 d-flex flex-column align-items-center transition-all ${selectedService === item.id ? 'btn-accent-pro text-white shadow' : 'bg-white'}`}
@@ -234,9 +242,11 @@ export default function SearchForm({
                   </div>
                 </div>
                 <div className="col-md-6">
-                  <label className="form-label tiny-label fw-bold text-muted mb-2 text-center d-block">🚨 URGENCE</label>
+                  <label className="form-label tiny-label fw-bold text-muted mb-2 text-center d-block">
+                    {t('searchForm.urgencyLabel')}
+                  </label>
                   <div className="row g-2">
-                    {[{id:'AOG',n:'AOG',i:'🚨'},{id:'Planned',n:'Planifié',i:'🗓️'}].map(item => (
+                    {urgencyOptions.map(item => (
                       <div className="col-6" key={item.id}>
                         <button key={item.id} type="button" 
                           className={`btn w-100 py-2 border-0 shadow-sm rounded-3 d-flex flex-column align-items-center transition-all ${selectedDate === item.id ? (item.id==='AOG'?'btn-danger text-white shadow':'btn-accent-pro text-white shadow') : 'bg-white'}`}
@@ -255,11 +265,11 @@ export default function SearchForm({
                 <button type="submit" className="btn btn-accent-pro px-5 py-2 fw-bold rounded-pill shadow" 
                   disabled={loading || (searchPhase === 1 && !selectedModel) || (searchPhase === 2 && (!selectedService || !selectedDate))}
                   style={{ minWidth: '240px' }}>
-                  {loading ? "..." : (searchPhase === 1 ? 'VÉRIFIER DISPONIBILITÉ' : 'RECHERCHER')}
+                  {loading ? "..." : (searchPhase === 1 ? t('searchForm.btnCheck') : t('searchForm.btnSearch'))}
                 </button>
                 
                 <button type="button" onClick={handleReset} className="btn btn-link text-muted p-0 text-decoration-none small" style={{ fontSize: '0.8rem' }}>
-                  🔄 Recommencer / Changer d'avion
+                  {t('searchForm.btnReset')}
                 </button>
               </div>
             </div>

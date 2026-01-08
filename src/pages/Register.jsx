@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
 
 export default function Register() {
+  const { t } = useTranslation(); // <--- HOOK
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -15,13 +17,14 @@ export default function Register() {
     setError(null);
     setMessage(null);
 
+    // Validation des mots de passe
     if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas.');
+      setError(t('register.errors.passwordMismatch'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères.');
+      setError(t('register.errors.passwordTooShort'));
       return;
     }
 
@@ -31,6 +34,8 @@ export default function Register() {
     });
 
     if (signUpError) {
+      // Note: Supabase renvoie souvent les erreurs en anglais par défaut.
+      // Pour une trad parfaite, il faudrait mapper les codes d'erreur Supabase.
       setError(signUpError.message);
       return;
     }
@@ -48,14 +53,15 @@ export default function Register() {
       ]);
 
     if (profileError) {
-      setError('Compte créé mais erreur lors de la création du profil.');
+      setError(t('register.errors.profileError'));
       return;
     }
 
+    // Message de succès selon le rôle
     setMessage(
       requestPro
-        ? 'Inscription réussie. Votre dossier professionnel est en cours d’examen.'
-        : 'Inscription réussie. Un email de confirmation vous a été envoyé.'
+        ? t('register.success.pro')
+        : t('register.success.user')
     );
   };
 
@@ -64,13 +70,19 @@ export default function Register() {
       <div className="card shadow-lg border-0 p-4" style={{ maxWidth: 500, width: '100%', borderRadius: '15px' }}>
         
         <div className="text-center mb-4">
-          <h2 className="fw-bold" style={{ color: 'var(--color-primary)' }}>Rejoignez-nous</h2>
-          <p className="text-muted">Créez votre compte pour accéder à nos services</p>
+          <h2 className="fw-bold" style={{ color: 'var(--color-primary)' }}>
+            {t('register.title')}
+          </h2>
+          <p className="text-muted">
+            {t('register.subtitle')}
+          </p>
         </div>
 
         <form onSubmit={handleRegister}>
           <div className="mb-3">
-            <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>Adresse Email</label>
+            <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>
+              {t('register.emailLabel')}
+            </label>
             <input
               type="email"
               className="form-control border-0 bg-light shadow-sm"
@@ -83,7 +95,9 @@ export default function Register() {
 
           <div className="row">
             <div className="col-md-6 mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>Mot de passe</label>
+              <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>
+                {t('register.passwordLabel')}
+              </label>
               <input
                 type="password"
                 className="form-control border-0 bg-light shadow-sm"
@@ -94,7 +108,9 @@ export default function Register() {
               />
             </div>
             <div className="col-md-6 mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>Confirmation</label>
+              <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>
+                {t('register.confirmLabel')}
+              </label>
               <input
                 type="password"
                 className="form-control border-0 bg-light shadow-sm"
@@ -120,13 +136,13 @@ export default function Register() {
                 style={{ cursor: 'pointer' }}
               />
               <label className="form-check-label fw-bold ms-2" htmlFor="requestPro" style={{ cursor: 'pointer', color: 'var(--color-primary)' }}>
-                S'enregistrer comme Professionnel
+                {t('register.isProLabel')}
               </label>
             </div>
             <small className="d-block text-muted mt-1">
               {requestPro 
-                ? "Vous demandez l'accès pour gérer des hangars ou services de maintenance." 
-                : "Cochez pour devenir partenaire et proposer vos services."}
+                ? t('register.proDescActive')
+                : t('register.proDescInactive')}
             </small>
           </div>
 
@@ -134,13 +150,13 @@ export default function Register() {
           {message && <div className="alert alert-success py-2 small border-0 mb-3">{message}</div>}
 
           <button className="btn btn-accent-pro w-100 py-2 fw-bold shadow-sm mb-3">
-            Créer mon compte
+            {t('register.btnSubmit')}
           </button>
 
           <div className="text-center">
-            <span className="text-muted small">Déjà inscrit ? </span>
+            <span className="text-muted small">{t('register.alreadyAccount')} </span>
             <Link to="/login" className="text-decoration-none fw-bold" style={{ color: 'var(--color-secondary)' }}>
-              Se connecter
+              {t('register.loginLink')}
             </Link>
           </div>
         </form>

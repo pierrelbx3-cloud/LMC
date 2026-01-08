@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import './index.css'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import './i18n';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 

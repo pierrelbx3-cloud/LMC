@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion'; 
-// Assurez-vous que le chemin est bon selon où vous avez créé le fichier
 import FaqSection from '../components/FaqSection'; 
+import { useTranslation } from 'react-i18next'; // <--- IMPORT
 
 const BACKGROUND_IMAGE_URL = '/background.png'; 
 const CAROUSEL_IMAGE_1 = '/home1.png';
@@ -10,6 +10,8 @@ const CAROUSEL_IMAGE_2 = '/home2.png';
 const CAROUSEL_IMAGE_3 = '/home3.png';
 
 export default function Home() {
+  const { t } = useTranslation(); // <--- HOOK
+  const currentYear = new Date().getFullYear(); // Année dynamique
 
   // Style de base pour les items du carrousel
   const carouselItemStyle = {
@@ -19,7 +21,6 @@ export default function Home() {
   };
 
   // --- CONFIGURATION DES ANIMATIONS (VARIANTS) ---
-  
   const fadeInUp = {
     hidden: { opacity: 0, y: 40 },
     visible: { 
@@ -65,10 +66,7 @@ export default function Home() {
       >
         <div 
           className="position-absolute top-0 start-0 w-100 h-100"
-          style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.25)', 
-            zIndex: 1, 
-          }}
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)', zIndex: 1 }}
         ></div>
 
         <motion.div 
@@ -86,13 +84,13 @@ export default function Home() {
                 className="btn btn-lg px-4 me-sm-3 fw-bold shadow"
                 style={{ backgroundColor: 'var(--color-accent, #FF7043)', borderColor: 'var(--color-accent, #FF7043)', color: 'white' }}
               >
-                ✈️ Trouver un Hangar
+                {t('home.hero.ctaSearch')}
               </Link>
             </motion.div>
             
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link to="/services" className="btn btn-outline-light btn-lg px-4">
-                En savoir plus
+                {t('home.hero.ctaLearnMore')}
               </Link>
             </motion.div>
           </div>
@@ -113,13 +111,12 @@ export default function Home() {
             className="text-uppercase fw-bold mb-2" 
             style={{ color: 'var(--color-accent, #4FC3F7)', letterSpacing: '0.1em' }}
           >
-            LA MAINTENANCE AÉRONAUTIQUE EN 2025
+             {t('home.hero.label', { year: currentYear })}
           </p>
           
-          <h1 className="display-4 fw-bolder text-light mb-4">Maintenance Aéronautique, Réinventée.</h1>
+          <h1 className="display-4 fw-bolder text-light mb-4">{t('home.hero.title')}</h1>
           <p className="col-md-10 fs-5 mx-auto opacity-75 text-light">
-            La première plateforme de mise en relation entre propriétaires d'avions et **hangars certifiés**. 
-            Réservez votre emplacement de maintenance en quelques clics.
+            {t('home.hero.subtitle')}
           </p>
         </motion.div>
       </div>
@@ -132,7 +129,7 @@ export default function Home() {
         viewport={{ once: true }}
         transition={{ duration: 1 }}
       >
-        <h2 className="text-center mb-4 fw-bold text-dark display-6">Découvrez nos Partenaires Premium</h2>
+        <h2 className="text-center mb-4 fw-bold text-dark display-6">{t('home.carousel.title')}</h2>
         
         <div id="carouselExampleIndicators" className="carousel slide shadow-lg rounded-3 overflow-hidden" data-bs-ride="carousel">
           <div className="carousel-indicators">
@@ -144,33 +141,33 @@ export default function Home() {
           <div className="carousel-inner">
             <div className="carousel-item active" style={{ ...carouselItemStyle, backgroundImage: `url(${CAROUSEL_IMAGE_1})` }}>
               <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded-3 p-3 mb-4">
-                <h5 className="fw-bolder">Hangar AéroTech - Paris Le Bourget</h5>
-                <p>Spécialisé dans la maintenance lourde des jets d'affaires.</p>
+                <h5 className="fw-bolder">{t('home.carousel.slide1.title')}</h5>
+                <p>{t('home.carousel.slide1.text')}</p>
               </div>
             </div>
 
             <div className="carousel-item" style={{ ...carouselItemStyle, backgroundImage: `url(${CAROUSEL_IMAGE_2})` }}>
               <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded-3 p-3 mb-4">
-                <h5 className="fw-bolder">Atelier SkyFix - Lyon</h5>
-                <p>Certification PART-145 pour l'entretien des turbopropulseurs régionaux.</p>
+                <h5 className="fw-bolder">{t('home.carousel.slide2.title')}</h5>
+                <p>{t('home.carousel.slide2.text')}</p>
               </div>
             </div>
 
             <div className="carousel-item" style={{ ...carouselItemStyle, backgroundImage: `url(${CAROUSEL_IMAGE_3})` }}>
               <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded-3 p-3 mb-4">
-                <h5 className="fw-bolder">Global MRO - Cannes</h5>
-                <p>Services de rénovation intérieure et peinture. Prise de rendez-vous immédiate.</p>
+                <h5 className="fw-bolder">{t('home.carousel.slide3.title')}</h5>
+                <p>{t('home.carousel.slide3.text')}</p>
               </div>
             </div>
           </div>
           
           <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
             <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Précédent</span>
+            <span className="visually-hidden">{t('home.carousel.prev')}</span>
           </button>
           <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
             <span className="carousel-control-next-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Suivant</span>
+            <span className="visually-hidden">{t('home.carousel.next')}</span>
           </button>
         </div>
       </motion.div>
@@ -184,7 +181,7 @@ export default function Home() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          Pourquoi Choisir LMC ?
+          {t('home.advantages.title')}
         </motion.h2>
         
         <motion.div 
@@ -205,8 +202,8 @@ export default function Home() {
                 <span className="fs-1 mb-3 d-block" style={{ color: 'var(--color-secondary)' }}>
                   <i className="fas fa-bolt"></i>
                 </span>
-                <h3 className="card-title fw-bolder mb-3">⚡️ Disponibilités Instantanées</h3>
-                <p className="card-text text-muted fs-5">Visualisez et réservez votre créneau en temps réel grâce à notre intégration API.</p>
+                <h3 className="card-title fw-bolder mb-3">{t('home.advantages.card1.title')}</h3>
+                <p className="card-text text-muted fs-5">{t('home.advantages.card1.text')}</p>
               </div>
             </motion.div>
           </motion.div>
@@ -221,8 +218,8 @@ export default function Home() {
                 <span className="fs-1 mb-3 d-block" style={{ color: 'var(--color-secondary, #4FC3F7)' }}>
                   <i className="fas fa-shield-alt"></i>
                 </span>
-                <h3 className="card-title fw-bolder mb-3">🛡️ Partenaires Certifiés</h3>
-                <p className="card-text text-muted fs-5">Accédez uniquement aux ateliers vérifiés (PART-145, EASA, etc.).</p>
+                <h3 className="card-title fw-bolder mb-3">{t('home.advantages.card2.title')}</h3>
+                <p className="card-text text-muted fs-5">{t('home.advantages.card2.text')}</p>
               </div>
             </motion.div>
           </motion.div>
@@ -237,16 +234,14 @@ export default function Home() {
                 <span className="fs-1 mb-3 d-block" style={{ color: 'var(--color-secondary, #4FC3F7)' }}>
                   <i className="fas fa-map-marker-alt"></i> 
                 </span>
-                <h3 className="card-title fw-bolder mb-3">🗺️ Géolocalisation Optimale</h3>
-                <p className="card-text text-muted fs-5">Trouvez le hangar idéal sur votre trajet. Réduisez les coûts de convoyage.</p>
+                <h3 className="card-title fw-bolder mb-3">{t('home.advantages.card3.title')}</h3>
+                <p className="card-text text-muted fs-5">{t('home.advantages.card3.text')}</p>
               </div>
             </motion.div>
           </motion.div>
 
         </motion.div>
       </div>
-
-      
 
       {/* ❓ SECTION FAQ (NOUVELLE INTÉGRATION) */}
       <motion.div
@@ -270,9 +265,9 @@ export default function Home() {
             className="col-12 p-5 rounded-4 text-center shadow-lg"
             style={{ backgroundColor: 'var(--color-light-bg, #f4f7f9)' }} 
           >
-            <h3 className="mb-3 fw-bold display-6">Devenez Partenaire Certifié LMC</h3>
+            <h3 className="mb-3 fw-bold display-6">{t('home.proCTA.title')}</h3>
             <p className="lead text-muted col-md-8 mx-auto fs-5">
-              Augmentez votre taux d'occupation, simplifiez votre gestion des réservations et gagnez de nouveaux clients qualifiés.
+              {t('home.proCTA.text')}
             </p>
             
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -281,7 +276,7 @@ export default function Home() {
                 className="btn btn-lg mt-3 shadow"
                 style={{ backgroundColor: 'var(--color-accent, #FF7043)', borderColor: 'var(--color-accent, #FF7043)', color: 'white' }}
               >
-                🤝 Accéder à l'Espace Pro
+                {t('home.proCTA.button')}
               </Link>
             </motion.div>
           </div>

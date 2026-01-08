@@ -1,0 +1,356 @@
+{
+    "header": {
+      "findMRO": "🔍 Trouver un MRO",
+      "services": "Services",
+      "contact": "Contact",
+      "login": "Connexion",
+      "proSpace": "Espace Pro",
+      "admin": "⚙️ Admin",
+      "myDashboard": "Mon Tableau de bord",
+      "logout": "Déconnexion",
+      "logoutError": "Erreur lors de la déconnexion"
+    },
+    "footer": {
+    "copyright": "© {{year}} AeroMaintenance - Tous droits réservés."
+  },
+  "home": {
+    "hero": {
+      "ctaSearch": "✈️ Trouver un Hangar",
+      "ctaLearnMore": "En savoir plus",
+      "label": "LA MAINTENANCE AÉRONAUTIQUE EN {{year}}",
+      "title": "Maintenance Aéronautique, Réinventée.",
+      "subtitle": "La première plateforme de mise en relation entre propriétaires d'avions et hangars certifiés. Réservez votre emplacement de maintenance en quelques clics."
+    },
+    "carousel": {
+      "title": "Découvrez nos Partenaires Premium",
+      "prev": "Précédent",
+      "next": "Suivant",
+      "slide1": {
+        "title": "Hangar AéroTech - Paris Le Bourget",
+        "text": "Spécialisé dans la maintenance lourde des jets d'affaires."
+      },
+      "slide2": {
+        "title": "Atelier SkyFix - Lyon",
+        "text": "Certification PART-145 pour l'entretien des turbopropulseurs régionaux."
+      },
+      "slide3": {
+        "title": "Global MRO - Cannes",
+        "text": "Services de rénovation intérieure et peinture. Prise de rendez-vous immédiate."
+      }
+    },
+    "advantages": {
+      "title": "Pourquoi Choisir LMC ?",
+      "card1": {
+        "title": "⚡️ Disponibilités Instantanées",
+        "text": "Visualisez et réservez votre créneau en temps réel grâce à notre intégration API."
+      },
+      "card2": {
+        "title": "🛡️ Partenaires Certifiés",
+        "text": "Accédez uniquement aux ateliers vérifiés (PART-145, EASA, etc.)."
+      },
+      "card3": {
+        "title": "🗺️ Géolocalisation Optimale",
+        "text": "Trouvez le hangar idéal sur votre trajet. Réduisez les coûts de convoyage."
+      }
+    },
+    "proCTA": {
+      "title": "Devenez Partenaire Certifié LMC",
+      "text": "Augmentez votre taux d'occupation, simplifiez votre gestion des réservations et gagnez de nouveaux clients qualifiés.",
+      "button": "🤝 Accéder à l'Espace Pro"
+    }
+  },
+  "searchForm": {
+    "step1": "Configuration",
+    "step2": "Intervention",
+    "directSearchLabel": "🚀 RECHERCHE DIRECTE",
+    "placeholder": "Tapez le nom de l'avion (ex: A320)...",
+    "noResult": "Aucun modèle trouvé",
+    "orGuided": "OU PARCOURS GUIDÉ",
+    "category": "CATÉGORIE",
+    "allCategories": "Toutes",
+    "manufacturer": "CONSTRUCTEUR",
+    "allManufacturers": "Tous",
+    "model": "MODÈLE",
+    "select": "Sélectionner...",
+    "serviceLabel": "🔧 PRESTATION",
+    "serviceLine": "Line",
+    "serviceBase": "Base",
+    "urgencyLabel": "🚨 URGENCE",
+    "urgencyPlanned": "Planifié",
+    "btnCheck": "VÉRIFIER DISPONIBILITÉ",
+    "btnSearch": "RECHERCHER",
+    "btnReset": "🔄 Recommencer / Changer d'avion"
+  },
+  "searchResults": {
+    "headerCount": "{{count}} Atelier certifié",
+    "headerCount_other": "{{count}} Ateliers certifiés",
+    "mapPopup": {
+      "viewDetails": "Voir Détails"
+    },
+    "tags": {
+      "certifiedMaintenance": "Maintenance certifiée",
+      "aogSupport": "Support AOG"
+    },
+    "status": {
+      "approvedStation": "Station agréée"
+    },
+    "buttons": {
+      "details": "Détails",
+      "contact": "Contacter"
+    }
+  },
+  "modal": {
+    "tabs": {
+      "info": "Informations",
+      "agreements": "Agréments",
+      "rating": "Évaluation"
+    },
+    "info": {
+      "address": "Adresse Physique",
+      "email": "Contact Email",
+      "phone": "Téléphone",
+      "icao": "Code ICAO Aéroport"
+    },
+    "agreements": {
+      "table": {
+        "number": "Agrément",
+        "authority": "Autorité",
+        "country": "Pays",
+        "type": "Type"
+      },
+      "noData": "Aucun agrément spécifique trouvé pour ce modèle d'appareil."
+    },
+    "rating": {
+      "label": "Expertise \"Let Me Check\"",
+      "description": "Cette note reflète l'expertise technique, la réactivité constatée et la qualité globale des infrastructures de cet atelier, certifiées par nos services."
+    },
+    "buttons": {
+      "close": "Fermer",
+      "quote": "Demander un devis"
+    }
+  },
+  "quoteModal": {
+    "title": "Demande de devis - {{hangarName}}",
+    "error": "Erreur lors de l'envoi",
+    "success": {
+      "title": "C'est envoyé !",
+      "message": "L'atelier recevra votre demande sous peu."
+    },
+    "form": {
+      "aircraft": "APPAREIL CONCERNÉ",
+      "name": "NOM COMPLET",
+      "phone": "TÉLÉPHONE",
+      "email": "EMAIL PROFESSIONNEL",
+      "description": "DESCRIPTION DES TRAVAUX",
+      "placeholder": "Précisez le type d'intervention (ex: visite annuelle, peinture...)"
+    },
+    "btnSend": "🚀 Envoyer la demande"
+  },
+  "login": {
+    "title": "Bon retour",
+    "subtitle": "Connectez-vous à votre espace pour gérer vos hangars",
+    "emailLabel": "Email Pro",
+    "emailPlaceholder": "votre@email.com",
+    "passwordLabel": "Mot de passe",
+    "forgotPassword": "Oublié ?",
+    "errorCredential": "Identifiants incorrects ou problème de connexion.",
+    "btnLogin": "Se connecter",
+    "btnLoading": "Connexion en cours...",
+    "newHere": "Nouveau sur la plateforme ?",
+    "btnRegister": "Créer un compte professionnel"
+  },
+  "register": {
+    "title": "Rejoignez-nous",
+    "subtitle": "Créez votre compte pour accéder à nos services",
+    "emailLabel": "Adresse Email",
+    "passwordLabel": "Mot de passe",
+    "confirmLabel": "Confirmation",
+    "isProLabel": "S'enregistrer comme Professionnel",
+    "proDescActive": "Vous demandez l'accès pour gérer des hangars ou services de maintenance.",
+    "proDescInactive": "Cochez pour devenir partenaire et proposer vos services.",
+    "btnSubmit": "Créer mon compte",
+    "alreadyAccount": "Déjà inscrit ?",
+    "loginLink": "Se connecter",
+    "errors": {
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères.",
+      "profileError": "Compte créé mais erreur lors de la création du profil."
+    },
+    "success": {
+      "pro": "Inscription réussie. Votre dossier professionnel est en cours d’examen.",
+      "user": "Inscription réussie. Un email de confirmation vous a été envoyé."
+    }
+  },
+  "faq": {
+    "title": "Questions Fréquentes",
+    "subtitle": "Tout ce que vous devez savoir sur nos services.",
+    "loading": "Chargement...",
+    "allCategories": "Tous",
+    "noItems": "Aucune question dans cette catégorie."
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "form": {
+      "title": "Envoyez-nous un message",
+      "name": "Nom complet",
+      "namePlaceholder": "Votre nom",
+      "email": "Adresse Email",
+      "emailPlaceholder": "nom@exemple.com",
+      "subject": "Sujet",
+      "subjects": {
+        "general": "Demande d'information générale",
+        "tech": "Support technique",
+        "partnership": "Partenariat Hangar"
+      },
+      "message": "Message",
+      "messagePlaceholder": "Comment pouvons-nous vous aider ?",
+      "btnSubmit": "Envoyer le message"
+    },
+    "info": {
+      "address": "Adresse",
+      "email": "Email",
+      "phone": "Téléphone",
+      "hours": "Du Lundi au Vendredi, 9h - 18h"
+    },
+    "urgent": {
+      "title": "Support Urgent ?",
+      "text": "Pour les urgences AOG (Aircraft on Ground), utilisez notre ligne dédiée disponible dans votre espace client."
+    }
+  },
+  "services": {
+    "title": "Nos Services",
+    "subtitle": "Une expertise technique et logistique pour votre flotte aéronautique.",
+    "btnAvailability": "Voir les disponibilités",
+    "items": {
+      "scheduled": {
+        "title": "Visites Programmées",
+        "desc": "Planifiez vos visites 50h, 100h ou annuelles. Trouvez des ateliers agréés pour votre type d'appareil spécifique."
+      },
+      "structural": {
+        "title": "Réparations Structurelles",
+        "desc": "Accédez à des spécialistes de la tôlerie et des composites pour des réparations complexes ou des modifications."
+      },
+      "avionics": {
+        "title": "Avionique & Moteur",
+        "desc": "Installation de nouveaux équipements, rétrofit ou révision moteur (Overhaul)."
+      },
+      "storage": {
+        "title": "Stockage Longue Durée",
+        "desc": "Besoin d'un abri sécurisé pour l'hiver ? Trouvez des places de hangar disponibles pour le stationnement."
+      }
+    },
+    "regulation": {
+      "title": "Information réglementaire :",
+      "text": "Les interventions techniques sont soumises aux agréments PART-145 ou PART-ML des ateliers. Vérifiez les certificats de navigabilité directement sur les profils des prestataires."
+    }
+  },
+  "proDashboard": {
+    "title": "Espace de Gestion Professionnel",
+    "subtitle": "Veuillez choisir votre action :",
+    "cards": {
+      "agenda": {
+        "title": "Gérer l'Agenda",
+        "desc": "Consultez, ajoutez ou bloquez les créneaux de maintenance dans votre hangar.",
+        "btn": "Accéder à l'Agenda"
+      },
+      "tech": {
+        "title": "Mettre à Jour mon Hangar",
+        "desc": "Modifiez vos certifications, vos tarifs, vos photos et vos coordonnées.",
+        "btn": "Gérer les Données"
+      },
+      "admin": {
+        "title": "Données Administratives",
+        "desc": "Gérez les informations légales, le SIRET, et les détails de facturation de votre entreprise.",
+        "btn": "Modifier les Informations"
+      }
+    }
+  },
+  "hangarUpdate": {
+    "title": "Capacités & Services",
+    "selectHangar": "SÉLECTION DU HANGAR À METTRE À JOUR",
+    "status": {
+      "initializing": "Initialisation de la console...",
+      "updating": "Mise à jour en cours...",
+      "saved": "Changements sauvegardés",
+      "error": "Erreur de sauvegarde"
+    },
+    "sections": {
+      "certifications": "Certifications & Modèles Agréés",
+      "services": "Services Complémentaires"
+    },
+    "relation": {
+      "active": "Services actifs :",
+      "none": "Aucun service sélectionné.",
+      "add": "Ajouter un service :"
+    },
+    "triple": {
+      "step1": "1. CHOIX DE L'AGRÉMENT",
+      "selectAgreement": "-- Vos agréments liés --",
+      "noAgreementError": "Liez d'abord des agréments dans \"Full Edit\".",
+      "step2": "2. TYPE DE MAINTENANCE",
+      "maintTypes": {
+        "base": "Base Maintenance",
+        "line": "Line Maintenance",
+        "both": "Base & Line"
+      },
+      "filter": "FILTRER",
+      "filterPlaceholder": "Nom avion...",
+      "category": "CATÉGORIE",
+      "all": "Tous",
+      "manufacturer": "CONSTRUCTEUR",
+      "step3": "3. MODÈLES (MULTI-SÉLECTION : CTRL+CLIC)",
+      "btnAdd": "AJOUTER"
+    },
+    "table": {
+      "model": "Modèle Avion",
+      "agreement": "Agrément",
+      "maintenance": "Maintenance",
+      "action": "Action",
+      "remove": "RETIRER",
+      "empty": "Aucune certification enregistrée."
+    }
+  },
+  "adminEdit": {
+    "title": "Console d'Administration",
+    "loading": "Chargement de l'interface...",
+    "selectLabel": "SÉLECTION DU HANGAR",
+    "status": {
+      "saving": "Sauvegarde des infos...",
+      "linking": "Mise à jour des liaisons...",
+      "success": "Succès !",
+      "error": "Erreur",
+      "created": "Agrément créé"
+    },
+    "general": {
+      "title": "Informations Générales",
+      "name": "Nom du Hangar",
+      "icao": "Code ICAO",
+      "address": "Adresse",
+      "addressPlaceholder": "Ex: 12 Rue de l'Aviation",
+      "zip": "Code Postal",
+      "city": "Ville",
+      "country": "Pays",
+      "email": "Email Principal",
+      "phone": "Téléphone",
+      "phonePlaceholder": "+33 6...",
+      "btnUpdate": "Mettre à jour le profil"
+    },
+    "newAg": {
+      "title": "Nouvel Agrément",
+      "desc": "Ajouter un agrément inexistant au référentiel global.",
+      "numPlaceholder": "Numéro (ex: EASA.145...)",
+      "authPlaceholder": "Autorité émettrice...",
+      "btnCreate": "Créer et Publier"
+    },
+    "relations": {
+      "agreementsTitle": "Portefeuille d'Agréments (Let Me Check Database)",
+      "mroTitle": "Compagnies MRO Parentes",
+      "active": "Liaisons actives :",
+      "none": "Aucun élément lié.",
+      "add": "Ajouter depuis le référentiel :",
+      "searchPlaceholder": "Tapez pour rechercher...",
+      "noResult": "Aucun résultat."
+    }
+  }
+  }
+  

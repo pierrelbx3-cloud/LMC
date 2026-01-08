@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
 
 // Fix pour les icônes Leaflet
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -68,6 +69,7 @@ export default function SearchResults({
   selectedDate,
   onViewDetail 
 }) {
+  const { t } = useTranslation(); // <--- HOOK
   const [activeCoords, setActiveCoords] = useState(null);
 
   if (searchPhase !== 2) return null;
@@ -113,7 +115,7 @@ export default function SearchResults({
                           className="btn btn-accent-pro btn-sm w-100 text-white"
                           onClick={() => onViewDetail(hangar)}
                         >
-                          Voir Détails
+                          {t('searchResults.mapPopup.viewDetails')}
                         </button>
                       </div>
                     </Popup>
@@ -131,7 +133,8 @@ export default function SearchResults({
         <div className="col-lg-7 px-3 px-lg-4" style={{ maxHeight: '85vh', overflowY: 'auto' }}>
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
             <h4 className="fw-bold m-0" style={{ color: 'var(--color-primary)' }}>
-              {searchResults.length} Ateliers certifiés
+              {/* Utilisation du pluriel automatique avec 'count' */}
+              {t('searchResults.headerCount', { count: searchResults.length })}
             </h4>
             <div className="d-flex flex-wrap gap-2">
               <span className="badge bg-light text-dark border p-2 shadow-sm">{selectedModel}</span>
@@ -147,7 +150,6 @@ export default function SearchResults({
               const lon = hangar.airports?.lon;
               const hasCoords = lat && lon;
               
-              // On récupère le type de maintenance spécifique au triple lien
               const specMaintenance = hangar.hangar_triple?.[0]?.maintenance_type;
 
               return (
@@ -166,7 +168,6 @@ export default function SearchResults({
                   <div className="card-body p-4">
                     <div className="d-flex justify-content-between align-items-start">
                       <div>
-                        {/* Affichage des étoiles en Or */}
                         <AdminStarRating rating={hangar.rating_admin} />
                         
                         <h5 className="fw-bold mb-1" style={{ color: 'var(--color-primary)' }}>
@@ -181,18 +182,18 @@ export default function SearchResults({
 
                     <div className="d-flex flex-wrap gap-2 my-2">
                       <span className="small px-2 py-1 rounded bg-light border-start border-3" style={{ borderLeftColor: 'var(--color-secondary)' }}>
-                        🔧 {specMaintenance || selectedService || "Maintenance certifiée"}
+                        🔧 {specMaintenance || selectedService || t('searchResults.tags.certifiedMaintenance')}
                       </span>
                       {selectedDate === 'AOG' && (
                         <span className="small px-2 py-1 rounded bg-danger-subtle text-danger border-start border-3 border-danger">
-                          ⚡ Support AOG
+                          ⚡ {t('searchResults.tags.aogSupport')}
                         </span>
                       )}
                     </div>
 
                     <div className="mt-3 pt-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
                       <div className="text-success small fw-bold">
-                        <span className="me-1">●</span> Station agréée
+                        <span className="me-1">●</span> {t('searchResults.status.approvedStation')}
                       </div>
                       <div className="d-flex gap-2 w-100 w-sm-auto">
                         <button 
@@ -203,7 +204,7 @@ export default function SearchResults({
                             onViewDetail(hangar);
                           }}
                         >
-                          Détails
+                          {t('searchResults.buttons.details')}
                         </button>
                         <button 
                           className="btn btn-accent-pro btn-sm px-4 text-white flex-grow-1 shadow-sm" 
@@ -213,7 +214,7 @@ export default function SearchResults({
                             onViewDetail(hangar); 
                           }}
                         >
-                          Contacter
+                          {t('searchResults.buttons.contact')}
                         </button>
                       </div>
                     </div>
