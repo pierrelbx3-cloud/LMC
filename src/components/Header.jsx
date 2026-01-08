@@ -1,17 +1,24 @@
 import React, { useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Ajout de useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
+import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
 
 export default function Header() {
   const collapseRef = useRef(null);
   const { user } = useAuth(); 
-  const navigate = useNavigate(); // Pour rediriger après le logout
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation(); // <--- HOOK
+
+  // Fonction pour changer la langue
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    handleLinkClick(); // Ferme le menu sur mobile après le clic
+  };
 
   const handleLinkClick = () => {
     const el = collapseRef.current;
     if (el && el.classList.contains('show')) {
-      // Vérification sécurisée de l'instance Bootstrap
       const bsCollapse = window.bootstrap?.Collapse?.getInstance(el);
       if (bsCollapse) bsCollapse.hide();
     }
@@ -19,20 +26,13 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      // CORRECTION : Utilisation de supabase.auth.signOut()
       const { error } = await supabase.auth.signOut();
-      
       if (error) throw error;
-
-      // Fermer le menu mobile
       handleLinkClick();
-      
-      // Rediriger l'utilisateur vers l'accueil ou la page login
       navigate('/'); 
-      
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error.message);
-      alert("Erreur lors de la déconnexion");
+      alert(t('header.logoutError')); // <--- Traduction de l'alerte
     }
   };
 
@@ -56,22 +56,48 @@ export default function Header() {
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
               <Link className="nav-link" to="/search" onClick={handleLinkClick}>
-                🔍 Find a MRO
+                {t('header.findMRO')}
               </Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/services" onClick={handleLinkClick}>
-                Services
+                {t('header.services')}
               </Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/contact" onClick={handleLinkClick}>
-                Contact
+                {t('header.contact')}
               </Link>
             </li>
           </ul>
 
-          <div className="d-flex gap-2 align-items-center">
+          <div className="d-flex gap-2 align-items-center flex-wrap">
+            
+            {/* --- SÉLECTEUR DE LANGUE --- */}
+            <div className="dropdown me-2">
+              <button 
+                className="btn btn-outline-light btn-sm dropdown-toggle" 
+                type="button" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false"
+              >
+                {i18n.language === 'en' ? '🇬🇧 EN' : '🇫🇷 FR'}
+              </button>
+              <ul className="dropdown-menu dropdown-menu-end" style={{ minWidth: 'auto' }}>
+                <li>
+                  <button className="dropdown-item" onClick={() => changeLanguage('fr')}>
+                    🇫🇷 FR
+                  </button>
+                </li>
+                <li>
+                  <button className="dropdown-item" onClick={() => changeLanguage('en')}>
+                    🇬🇧 EN
+                  </button>
+                </li>
+              </ul>
+            </div>
+            {/* --------------------------- */}
+
             {!user ? (
               <>
                 <Link
@@ -79,14 +105,14 @@ export default function Header() {
                   className="btn btn-outline-light btn-sm px-3"
                   onClick={handleLinkClick}
                 >
-                  Login
+                  {t('header.login')}
                 </Link>
                 <Link
                   to="/login"
                   className="btn btn-accent-pro btn-sm text-white px-3"
                   onClick={handleLinkClick}
                 >
-                  Espace Pro
+                  {t('header.proSpace')}
                 </Link>
               </>
             ) : (
@@ -96,7 +122,7 @@ export default function Header() {
                   className="btn btn-info btn-sm px-3 text-white"
                   onClick={handleLinkClick}
                 >
-                  ⚙️ Admin
+                  {t('header.admin')}
                 </Link>
 
                 <Link
@@ -104,14 +130,14 @@ export default function Header() {
                   className="btn btn-accent-pro btn-sm text-white px-3"
                   onClick={handleLinkClick}
                 >
-                  Mon Dashboard
+                  {t('header.myDashboard')}
                 </Link>
 
                 <button
                   className="btn btn-outline-danger btn-sm px-3"
                   onClick={handleLogout}
                 >
-                  Logout
+                  {t('header.logout')}
                 </button>
               </>
             )}

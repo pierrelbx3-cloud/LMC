@@ -1,73 +1,85 @@
 import React from 'react';
-// Remplacement de 'Link' par une balise standard 'a' pour éviter les erreurs de contexte de routeur (BrowserRouter/HashRouter)
-// import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'; // <--- ON RÉTABLIT LINK
+import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
 
 export default function ProDashboard() {
-  // Styles réutilisés pour la cohérence
+  const { t } = useTranslation(); // <--- HOOK
+
+  // Vos variables de style (conservées)
   const primaryColor = 'var(--color-primary, #1A237E)';
   const secondaryColor = 'var(--color-secondary, #4FC3F7)';
   const accentColor = 'var(--color-accent, #FF7043)';
 
   return (
     <div className="container py-5">
-      <h2 className="mb-4 fw-bold">Espace de Gestion Professionnel</h2>
-      <p className="lead text-muted">Veuillez choisir votre action :</p>
+      <h2 className="mb-4 fw-bold">
+        {t('proDashboard.title')}
+      </h2>
+      <p className="lead text-muted">
+        {t('proDashboard.subtitle')}
+      </p>
 
       <div className="row mt-5 g-4">
         
-        {/* CARTE 1 : Gérer l'Agenda des Hangars */}
+        {/* CARTE 1 : Agenda */}
         <div className="col-md-6">
           <div className="card h-100 shadow-sm transition-hover">
             <div className="card-body p-4">
-              <h3 className="card-title fw-bold" style={{ color: primaryColor }}>🗓️ Gérer l'Agenda</h3>
+              <h3 className="card-title fw-bold" style={{ color: primaryColor }}>
+                🗓️ {t('proDashboard.cards.agenda.title')}
+              </h3>
               <p className="card-text text-muted mt-3">
-                Consultez, ajoutez ou bloquez les créneaux de maintenance dans votre hangar.
+                {t('proDashboard.cards.agenda.desc')}
               </p>
-              <a 
-                href="/pro/agenda" 
+              <Link 
+                to="/pro/agenda" 
                 className="btn btn-outline-primary mt-3" 
                 style={{backgroundColor: primaryColor, borderColor: primaryColor, color: 'white' }}
               >
-                Accéder à l'Agenda
-              </a>
+                {t('proDashboard.cards.agenda.btn')}
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* CARTE 2 : Mettre à Jour les Données Techniques du Hangar */}
+        {/* CARTE 2 : Technique Hangar */}
         <div className="col-md-6">
           <div className="card h-100 shadow-sm transition-hover">
             <div className="card-body p-4">
-              <h3 className="card-title fw-bold" style={{ color: primaryColor }}>⚙️ Mettre à Jour mon Hangar</h3>
+              <h3 className="card-title fw-bold" style={{ color: primaryColor }}>
+                ⚙️ {t('proDashboard.cards.tech.title')}
+              </h3>
               <p className="card-text text-muted mt-3">
-                Modifiez vos certifications, vos tarifs, vos photos et vos coordonnées.
+                {t('proDashboard.cards.tech.desc')}
               </p>
-              <a 
-                href="/pro/hangar" 
+              <Link 
+                to="/pro/hangar" 
                 className="btn mt-3" 
                 style={{ backgroundColor: accentColor, borderColor: accentColor, color: 'white' }}
               >
-                Gérer les Données
-              </a>
+                {t('proDashboard.cards.tech.btn')}
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* NOUVELLE CARTE 3 : Modification des Données Administratives */}
+        {/* CARTE 3 : Administratif */}
         <div className="col-md-6">
           <div className="card h-100 shadow-sm transition-hover">
             <div className="card-body p-4">
-              <h3 className="card-title fw-bold" style={{ color: primaryColor }}>🏛️ Modification des Données Administratives</h3>
+              <h3 className="card-title fw-bold" style={{ color: primaryColor }}>
+                🏛️ {t('proDashboard.cards.admin.title')}
+              </h3>
               <p className="card-text text-muted mt-3">
-                Gérez les informations légales, le SIRET, et les détails de facturation de votre entreprise.
+                {t('proDashboard.cards.admin.desc')}
               </p>
-              <a 
-                href="/pro/admin" 
+              <Link 
+                to="/pro/admin" 
                 className="btn mt-3" 
                 style={{ backgroundColor: primaryColor, borderColor: primaryColor, color: 'white' }}
               >
-                Modifier les Informations
-              </a>
+                {t('proDashboard.cards.admin.btn')}
+              </Link>
             </div>
           </div>
         </div>

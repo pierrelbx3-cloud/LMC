@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
 
 export default function FaqSection() {
+  const { t, i18n } = useTranslation(); // <--- HOOK
+  const currentLang = i18n.language.split('-')[0]; // 'fr' ou 'en'
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeId, setActiveId] = useState(null); // ID de la question ouverte
-  const [selectedCategory, setSelectedCategory] = useState('Tous');
-  const [categories, setCategories] = useState(['Tous']);
+  const [activeId, setActiveId] = useState(null); 
+  
+  // On utilise une clé technique 'ALL' pour éviter les problèmes de traduction du mot "Tous"
+  const ALL_CATS = 'ALL';
+  const [selectedCategory, setSelectedCategory] = useState(ALL_CATS);
+  const [categories, setCategories] = useState([ALL_CATS]);
 
   useEffect(() => {
     fetchFaq();
@@ -14,7 +21,6 @@ export default function FaqSection() {
 
   const fetchFaq = async () => {
     try {
-      // Récupérer les items visibles triés par ordre
       const { data, error } = await supabase
         .from('faq_items')
         .select('*')
@@ -25,8 +31,8 @@ export default function FaqSection() {
 
       setItems(data);
 
-      // Extraire les catégories uniques dynamiquement
-      const uniqueCats = ['Tous', ...new Set(data.map(item => item.category))];
+      // Extraction dynamique des catégories
+      const uniqueCats = [ALL_CATS, ...new Set(data.map(item => item.category))];
       setCategories(uniqueCats);
     } catch (err) {
       console.error("Erreur FAQ:", err);
@@ -35,8 +41,8 @@ export default function FaqSection() {
     }
   };
 
-  // Filtrer les items affichés
-  const filteredItems = selectedCategory === 'Tous' 
+  // Filtrer les items
+  const filteredItems = selectedCategory === ALL_CATS 
     ? items 
     : items.filter(item => item.category === selectedCategory);
 
@@ -44,7 +50,7 @@ export default function FaqSection() {
     setActiveId(activeId === id ? null : id);
   };
 
-  if (loading) return <div className="text-center py-5">Chargement...</div>;
+  if (loading) return <div className="text-center py-5">{t('faq.loading')}</div>;
 
   return (
     <section className="py-5" style={{ backgroundColor: '#f8f9fa' }}>
@@ -52,8 +58,12 @@ export default function FaqSection() {
         
         {/* Header */}
         <div className="text-center mb-5">
-          <h2 className="fw-bold mb-3" style={{ color: 'var(--color-primary)' }}>Questions Fréquentes</h2>
-          <p className="text-muted">Tout ce que vous devez savoir sur nos services.</p>
+          <h2 className="fw-bold mb-3" style={{ color: 'var(--color-primary)' }}>
+            {t('faq.title')}
+          </h2>
+          <p className="text-muted">
+            {t('faq.subtitle')}
+          </p>
         </div>
 
         {/* Filtres par Catégorie */}
@@ -69,7 +79,8 @@ export default function FaqSection() {
                 border: '1px solid var(--color-primary)'
               }}
             >
-              {cat}
+              {/* Si la catégorie est 'ALL', on traduit, sinon on affiche le nom tel quel (ex: Billing) */}
+              {cat === ALL_CATS ? t('faq.allCategories') : cat}
             </button>
           ))}
         </div>
@@ -78,6 +89,13 @@ export default function FaqSection() {
         <div className="d-flex flex-column gap-3">
           {filteredItems.map((item) => {
             const isOpen = activeId === item.id;
+            
+            // --- LOGIQUE MULTILINGUE BASE DE DONNÉES ---
+            // Essaie de trouver 'question_en' sinon prend 'question'
+            const questionText = item[`question_${currentLang}`] || item.question;
+            const answerText = item[`answer_${currentLang}`] || item.answer;
+            // -------------------------------------------
+
             return (
               <div 
                 key={item.id} 
@@ -91,7 +109,7 @@ export default function FaqSection() {
                   style={{ cursor: 'pointer' }}
                 >
                   <h6 className="mb-0 fw-bold" style={{ color: isOpen ? 'var(--color-accent)' : '#333' }}>
-                    {item.question}
+                    {questionText}
                   </h6>
                   <span 
                     style={{ 
@@ -105,7 +123,7 @@ export default function FaqSection() {
                   </span>
                 </div>
 
-                {/* Réponse (Animation CSS simple via max-height) */}
+                {/* Réponse */}
                 <div 
                   style={{ 
                     maxHeight: isOpen ? '500px' : '0', 
@@ -116,7 +134,8 @@ export default function FaqSection() {
                 >
                   <div className="card-body px-4 pb-4 pt-0 text-muted" style={{ lineHeight: '1.6' }}>
                     <div className="border-top pt-3">
-                      {item.answer}
+                      {/* Rendu HTML si jamais vous mettez du gras/italique dans Supabase */}
+                      {answerText}
                     </div>
                   </div>
                 </div>
@@ -128,7 +147,7 @@ export default function FaqSection() {
         {/* Empty State */}
         {filteredItems.length === 0 && (
           <div className="text-center text-muted py-5">
-            Aucune question dans cette catégorie.
+            {t('faq.noItems')}
           </div>
         )}
 

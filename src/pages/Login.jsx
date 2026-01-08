@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
 
 export default function Login() {
+  const { t } = useTranslation(); // <--- HOOK
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +22,8 @@ export default function Login() {
     });
 
     if (signInError) {
-      setError("Identifiants incorrects ou problème de connexion.");
+      // Message d'erreur traduit
+      setError(t('login.errorCredential'));
       setLoading(false);
     } else if (data.user) {
       navigate('/pro/dashboard');
@@ -33,18 +36,24 @@ export default function Login() {
         
         {/* EN-TÊTE HARMONISÉ */}
         <div className="text-center mb-4">
-          <h2 className="fw-bold" style={{ color: 'var(--color-primary)' }}>Bon retour</h2>
-          <p className="text-muted">Connectez-vous à votre espace pour gérer vos hangars</p>
+          <h2 className="fw-bold" style={{ color: 'var(--color-primary)' }}>
+            {t('login.title')}
+          </h2>
+          <p className="text-muted">
+            {t('login.subtitle')}
+          </p>
         </div>
 
         <form onSubmit={handleLogin}>
           {/* EMAIL STYLE LIGHT */}
           <div className="mb-3">
-            <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>Email Pro</label>
+            <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>
+              {t('login.emailLabel')}
+            </label>
             <input
               type="email"
               className="form-control border-0 bg-light shadow-sm"
-              placeholder="votre@email.com"
+              placeholder={t('login.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -55,9 +64,11 @@ export default function Login() {
           {/* MOT DE PASSE STYLE LIGHT */}
           <div className="mb-4">
             <div className="d-flex justify-content-between">
-              <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>Mot de passe</label>
+              <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>
+                {t('login.passwordLabel')}
+              </label>
               <Link to="/reset-password" alt="Oublié" className="text-decoration-none small opacity-75" style={{ color: 'var(--color-primary)' }}>
-                Oublié ?
+                {t('login.forgotPassword')}
               </Link>
             </div>
             <input
@@ -84,13 +95,13 @@ export default function Login() {
             className="btn btn-accent-pro w-100 py-2 fw-bold shadow-sm mb-4"
             disabled={loading}
           >
-            {loading ? 'Connexion en cours...' : 'Se connecter'}
+            {loading ? t('login.btnLoading') : t('login.btnLogin')}
           </button>
 
           {/* SÉPARATEUR POUR LE BOUTON D'INSCRIPTION */}
           <div className="d-flex align-items-center mb-4">
             <hr className="flex-grow-1 opacity-25" />
-            <span className="mx-3 text-muted small">Nouveau sur la plateforme ?</span>
+            <span className="mx-3 text-muted small">{t('login.newHere')}</span>
             <hr className="flex-grow-1 opacity-25" />
           </div>
 
@@ -101,7 +112,7 @@ export default function Login() {
               className="btn btn-outline-light btn-sm w-100 py-2 border shadow-sm text-dark fw-bold" 
               style={{ borderRadius: '10px', transition: 'all 0.3s ease' }}
             >
-              Créer un compte professionnel
+              {t('login.btnRegister')}
             </Link>
           </div>
         </form>

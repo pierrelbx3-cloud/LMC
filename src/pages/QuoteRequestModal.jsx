@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
 
 export default function QuoteRequestModal({ show, onClose, hangar, selectedModel }) {
+  const { t } = useTranslation(); // <--- HOOK
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,7 +20,6 @@ export default function QuoteRequestModal({ show, onClose, hangar, selectedModel
 
     const dataToSend = {
       ...formData,
-      // AJOUT DU TOKEN DE SÉCURITÉ ICI
       token: "mysecretPIERRE", 
       hangar_name: hangar?.nom_hangar,
       aircraft_model: selectedModel,
@@ -27,23 +29,20 @@ export default function QuoteRequestModal({ show, onClose, hangar, selectedModel
     try {
       await fetch(GOOGLE_SHEET_URL, {
         method: 'POST',
-        mode: 'no-cors', // Nécessaire pour Google Script
+        mode: 'no-cors', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSend)
       });
       
-      // Avec mode: 'no-cors', on ne peut pas lire le corps de la réponse,
-      // mais si le fetch ne throw pas d'erreur, on valide le succès.
       setStatus('success');
       setTimeout(() => { 
         onClose(); 
         setStatus('idle'); 
-        // Optionnel : réinitialiser le formulaire
         setFormData({ name: '', email: '', phone: '', description: '' });
       }, 2000);
     } catch (error) {
       console.error("Erreur d'envoi:", error);
-      alert("Erreur lors de l'envoi");
+      alert(t('quoteModal.error')); // <--- Traduction de l'alerte
       setStatus('idle');
     }
   };
@@ -58,7 +57,8 @@ export default function QuoteRequestModal({ show, onClose, hangar, selectedModel
           <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '15px' }}>
             <div className="modal-header border-0 p-4">
               <h5 className="fw-bold mb-0" style={{ color: 'var(--color-primary)' }}>
-                Demande de devis - {hangar?.nom_hangar}
+                {/* Utilisation de variable dans la traduction */}
+                {t('quoteModal.title', { hangarName: hangar?.nom_hangar })}
               </h5>
               <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
@@ -66,18 +66,26 @@ export default function QuoteRequestModal({ show, onClose, hangar, selectedModel
               {status === 'success' ? (
                 <div className="text-center py-4 animate__animated animate__zoomIn">
                   <div className="display-1 mb-3">✅</div>
-                  <h4 className="fw-bold" style={{ color: 'var(--color-primary)' }}>C'est envoyé !</h4>
-                  <p className="text-muted">L'atelier recevra votre demande sous peu.</p>
+                  <h4 className="fw-bold" style={{ color: 'var(--color-primary)' }}>
+                    {t('quoteModal.success.title')}
+                  </h4>
+                  <p className="text-muted">
+                    {t('quoteModal.success.message')}
+                  </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit}>
                   <div className="mb-3">
-                    <label className="form-label small fw-bold text-muted">APPAREIL CONCERNÉ</label>
+                    <label className="form-label small fw-bold text-muted">
+                      {t('quoteModal.form.aircraft')}
+                    </label>
                     <input type="text" className="form-control bg-light border-0" value={selectedModel} disabled />
                   </div>
                   <div className="row g-3 mb-3">
                     <div className="col-md-6">
-                      <label className="form-label small fw-bold text-muted">NOM COMPLET</label>
+                      <label className="form-label small fw-bold text-muted">
+                        {t('quoteModal.form.name')}
+                      </label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -87,7 +95,9 @@ export default function QuoteRequestModal({ show, onClose, hangar, selectedModel
                       />
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label small fw-bold text-muted">TÉLÉPHONE</label>
+                      <label className="form-label small fw-bold text-muted">
+                        {t('quoteModal.form.phone')}
+                      </label>
                       <input 
                         type="tel" 
                         className="form-control" 
@@ -97,7 +107,9 @@ export default function QuoteRequestModal({ show, onClose, hangar, selectedModel
                     </div>
                   </div>
                   <div className="mb-3">
-                    <label className="form-label small fw-bold text-muted">EMAIL PROFESSIONNEL</label>
+                    <label className="form-label small fw-bold text-muted">
+                      {t('quoteModal.form.email')}
+                    </label>
                     <input 
                       type="email" 
                       className="form-control" 
@@ -107,12 +119,14 @@ export default function QuoteRequestModal({ show, onClose, hangar, selectedModel
                     />
                   </div>
                   <div className="mb-4">
-                    <label className="form-label small fw-bold text-muted">DESCRIPTION DES TRAVAUX</label>
+                    <label className="form-label small fw-bold text-muted">
+                      {t('quoteModal.form.description')}
+                    </label>
                     <textarea 
                       className="form-control" 
                       rows="3" 
                       required
-                      placeholder="Précisez le type d'intervention (ex: visite annuelle, peinture...)"
+                      placeholder={t('quoteModal.form.placeholder')}
                       value={formData.description}
                       onChange={e => setFormData({...formData, description: e.target.value})}
                     ></textarea>
@@ -124,7 +138,7 @@ export default function QuoteRequestModal({ show, onClose, hangar, selectedModel
                   >
                     {status === 'sending' ? (
                       <span className="spinner-border spinner-border-sm me-2"></span>
-                    ) : '🚀 Envoyer la demande'}
+                    ) : t('quoteModal.btnSend')}
                   </button>
                 </form>
               )}

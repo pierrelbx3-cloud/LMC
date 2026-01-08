@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
 
 /**
  * Variables de style harmonisées
@@ -16,6 +17,7 @@ const styles = {
 // COMPOSANT 1 : Services (Gestion par badges stylisés)
 // =========================================================
 const RelationEditor = ({ title, options, currentIds, onUpdate, idKey, nameKey, junctionTable }) => {
+    const { t } = useTranslation(); // <--- HOOK
     const [selectedIds, setSelectedIds] = useState(currentIds);
 
     useEffect(() => {
@@ -38,7 +40,7 @@ const RelationEditor = ({ title, options, currentIds, onUpdate, idKey, nameKey, 
         <div className="mb-4 p-4 rounded-4 shadow-sm bg-white border-0">
             <h4 className="mb-3 fw-bold" style={{ color: styles.primary, fontSize: '1.2rem' }}>{title}</h4>
             
-            <p className="text-muted small fw-bold mb-2">Services actifs :</p>
+            <p className="text-muted small fw-bold mb-2">{t('hangarUpdate.relation.active')}</p>
             <div className="d-flex flex-wrap gap-2 mb-4">
                 {selectedOptions.length > 0 ? (
                     selectedOptions.map(option => (
@@ -51,10 +53,10 @@ const RelationEditor = ({ title, options, currentIds, onUpdate, idKey, nameKey, 
                             {option[nameKey]} <span className="ms-2" style={{opacity: 0.6}}>✕</span>
                         </div>
                     ))
-                ) : <p className="text-muted small fst-italic">Aucun service sélectionné.</p>}
+                ) : <p className="text-muted small fst-italic">{t('hangarUpdate.relation.none')}</p>}
             </div>
 
-            <p className="text-muted small fw-bold mb-2">Ajouter un service :</p>
+            <p className="text-muted small fw-bold mb-2">{t('hangarUpdate.relation.add')}</p>
             <div className="d-flex flex-wrap gap-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
                 {availableOptions.map(option => (
                     <div 
@@ -75,6 +77,7 @@ const RelationEditor = ({ title, options, currentIds, onUpdate, idKey, nameKey, 
 // COMPOSANT 2 : Éditeur Triple (Avion + Agrément + Maintenance)
 // =========================================================
 const HangarTripleEditor = ({ title, avionOptions, agreementOptions, currentTriples, onUpdate }) => {
+    const { t } = useTranslation(); // <--- HOOK
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedTCHolder, setSelectedTCHolder] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -132,52 +135,52 @@ const HangarTripleEditor = ({ title, avionOptions, agreementOptions, currentTrip
             <div className="bg-light p-4 rounded-4 mb-4 border-0">
                 <div className="row g-3">
                     <div className="col-md-6">
-                        <label className="small text-muted fw-bold mb-2">1. CHOIX DE L'AGRÉMENT</label>
+                        <label className="small text-muted fw-bold mb-2">{t('hangarUpdate.triple.step1')}</label>
                         <select className="form-select border-0 shadow-none py-2" value={selectedAgreementId} onChange={e => setSelectedAgreementId(e.target.value)} style={{ borderRadius: '10px' }}>
-                            <option value="">-- Vos agréments liés --</option>
+                            <option value="">{t('hangarUpdate.triple.selectAgreement')}</option>
                             {agreementOptions.map(a => <option key={a.id_agreement} value={a.id_agreement}>{a.displayName}</option>)}
                         </select>
-                        {agreementOptions.length === 0 && <small className="text-danger mt-1 d-block">Liez d'abord des agréments dans "Full Edit".</small>}
+                        {agreementOptions.length === 0 && <small className="text-danger mt-1 d-block">{t('hangarUpdate.triple.noAgreementError')}</small>}
                     </div>
                     <div className="col-md-6">
-                        <label className="small text-muted fw-bold mb-2">2. TYPE DE MAINTENANCE</label>
+                        <label className="small text-muted fw-bold mb-2">{t('hangarUpdate.triple.step2')}</label>
                         <select className="form-select border-0 shadow-none py-2" value={maintenanceType} onChange={e => setMaintenanceType(e.target.value)} style={{ borderRadius: '10px' }}>
-                            <option value="Base">Base Maintenance</option>
-                            <option value="Line">Line Maintenance</option>
-                            <option value="Base & Line">Base & Line</option>
+                            <option value="Base">{t('hangarUpdate.triple.maintTypes.base')}</option>
+                            <option value="Line">{t('hangarUpdate.triple.maintTypes.line')}</option>
+                            <option value="Base & Line">{t('hangarUpdate.triple.maintTypes.both')}</option>
                         </select>
                     </div>
 
                     <div className="col-12"><hr className="my-2" style={{opacity: 0.1}} /></div>
 
                     <div className="col-md-4">
-                        <label className="small text-muted fw-bold mb-2">FILTRER</label>
-                        <input type="text" className="form-control border-0 py-2 shadow-none" placeholder="Nom avion..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ borderRadius: '10px' }} />
+                        <label className="small text-muted fw-bold mb-2">{t('hangarUpdate.triple.filter')}</label>
+                        <input type="text" className="form-control border-0 py-2 shadow-none" placeholder={t('hangarUpdate.triple.filterPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ borderRadius: '10px' }} />
                     </div>
                     <div className="col-md-4">
-                        <label className="small text-muted fw-bold mb-2">CATÉGORIE</label>
+                        <label className="small text-muted fw-bold mb-2">{t('hangarUpdate.triple.category')}</label>
                         <select className="form-select border-0 py-2 shadow-none" value={selectedCategory} onChange={e => {setSelectedCategory(e.target.value); setSelectedTCHolder('');}} style={{ borderRadius: '10px' }}>
-                            <option value="">Toutes</option>
+                            <option value="">{t('hangarUpdate.triple.all')}</option>
                             {uniqueCategories.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
                     <div className="col-md-4">
-                        <label className="small text-muted fw-bold mb-2">CONSTRUCTEUR</label>
+                        <label className="small text-muted fw-bold mb-2">{t('hangarUpdate.triple.manufacturer')}</label>
                         <select className="form-select border-0 py-2 shadow-none" value={selectedTCHolder} onChange={e => setSelectedTCHolder(e.target.value)} style={{ borderRadius: '10px' }}>
-                            <option value="">Tous</option>
+                            <option value="">{t('hangarUpdate.triple.all')}</option>
                             {uniqueTCHolders.map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
 
                     <div className="col-md-9">
-                        <label className="small text-muted fw-bold mb-2">3. MODÈLES (MULTI-SÉLECTION : CTRL+CLIC)</label>
+                        <label className="small text-muted fw-bold mb-2">{t('hangarUpdate.triple.step3')}</label>
                         <select multiple className="form-select border-0 shadow-none" style={{height: '120px', borderRadius: '10px'}} value={selectedModelIds} onChange={e => setSelectedModelIds(Array.from(e.target.selectedOptions, o => o.value))}>
                             {filteredModels.map(o => <option key={o.id_type} value={o.id_type} className="py-1 px-2">{o.model_avion} ({o.tc_holder})</option>)}
                         </select>
                     </div>
                     <div className="col-md-3 d-flex align-items-end">
                         <button className="btn w-100 py-3 fw-bold text-white shadow-sm border-0" onClick={handleAdd} disabled={selectedModelIds.length === 0 || !selectedAgreementId} style={{ backgroundColor: styles.accent, borderRadius: '12px' }}>
-                            AJOUTER {selectedModelIds.length > 0 ? `(${selectedModelIds.length})` : ''}
+                            {t('hangarUpdate.triple.btnAdd')} {selectedModelIds.length > 0 ? `(${selectedModelIds.length})` : ''}
                         </button>
                     </div>
                 </div>
@@ -187,10 +190,10 @@ const HangarTripleEditor = ({ title, avionOptions, agreementOptions, currentTrip
                 <table className="table table-hover border-0 align-middle">
                     <thead style={{ backgroundColor: styles.primary, color: styles.white }}>
                         <tr>
-                            <th className="py-3 px-4 border-0" style={{ borderRadius: '10px 0 0 0' }}>Modèle Avion</th>
-                            <th className="py-3 border-0">Agrément</th>
-                            <th className="py-3 border-0">Maintenance</th>
-                            <th className="py-3 px-4 border-0 text-end" style={{ borderRadius: '0 10px 0 0' }}>Action</th>
+                            <th className="py-3 px-4 border-0" style={{ borderRadius: '10px 0 0 0' }}>{t('hangarUpdate.table.model')}</th>
+                            <th className="py-3 border-0">{t('hangarUpdate.table.agreement')}</th>
+                            <th className="py-3 border-0">{t('hangarUpdate.table.maintenance')}</th>
+                            <th className="py-3 px-4 border-0 text-end" style={{ borderRadius: '0 10px 0 0' }}>{t('hangarUpdate.table.action')}</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white">
@@ -203,12 +206,14 @@ const HangarTripleEditor = ({ title, avionOptions, agreementOptions, currentTrip
                                     <td><span className="badge px-3 py-2" style={{ backgroundColor: styles.secondary, color: styles.primary, borderRadius: '20px' }}>{agr?.displayName || 'Inconnu'}</span></td>
                                     <td><span className="text-muted small fw-bold">{t.maintenance_type}</span></td>
                                     <td className="text-end px-4">
-                                        <button className="btn btn-sm btn-link text-danger text-decoration-none fw-bold" onClick={() => handleRemove(i)}>RETIRER</button>
+                                        <button className="btn btn-sm btn-link text-danger text-decoration-none fw-bold" onClick={() => handleRemove(i)}>
+                                            {t('hangarUpdate.table.remove')}
+                                        </button>
                                     </td>
                                 </tr>
                             );
                         }) : (
-                            <tr><td colSpan="4" className="text-center p-5 text-muted fst-italic">Aucune certification enregistrée.</td></tr>
+                            <tr><td colSpan="4" className="text-center p-5 text-muted fst-italic">{t('hangarUpdate.table.empty')}</td></tr>
                         )}
                     </tbody>
                 </table>
@@ -221,6 +226,7 @@ const HangarTripleEditor = ({ title, avionOptions, agreementOptions, currentTrip
 // COMPOSANT PRINCIPAL : HangarUpdate
 // =========================================================
 export default function HangarUpdate() {
+    const { t } = useTranslation(); // <--- HOOK
     const [hangars, setHangars] = useState([]);
     const [selectedHangarId, setSelectedHangarId] = useState(null);
     const [hangarData, setHangarData] = useState({ triple_data: [], service_ids: [] });
@@ -276,7 +282,7 @@ export default function HangarUpdate() {
     }, [selectedHangarId]);
 
     const handleUpdate = async (table, newData) => {
-        setUpdateStatus('Mise à jour en cours...');
+        setUpdateStatus(t('hangarUpdate.status.updating'));
         try {
             await supabase.from(table).delete().eq('id_hangar', selectedHangarId);
             if (newData.length > 0) {
@@ -286,31 +292,31 @@ export default function HangarUpdate() {
                 await supabase.from(table).insert(payload);
             }
             setHangarData(prev => ({ ...prev, [table === 'hangar_triple' ? 'triple_data' : 'service_ids']: newData }));
-            setUpdateStatus('Changements sauvegardés');
+            setUpdateStatus(t('hangarUpdate.status.saved'));
             setTimeout(() => setUpdateStatus(''), 2500);
-        } catch (e) { setUpdateStatus('Erreur de sauvegarde'); }
+        } catch (e) { setUpdateStatus(t('hangarUpdate.status.error')); }
     };
 
-    if (loading && hangars.length === 0) return <div className="text-center p-5 mt-5">Initialisation de la console...</div>;
+    if (loading && hangars.length === 0) return <div className="text-center p-5 mt-5">{t('hangarUpdate.status.initializing')}</div>;
 
     return (
         <div style={{ backgroundColor: styles.lightBg, minHeight: '100vh' }}>
             <div className="container py-5">
                 <div className="d-flex justify-content-between align-items-center mb-5">
-                    <h2 className="fw-bold m-0" style={{ color: styles.primary }}>⚙️ Capacités & Services</h2>
+                    <h2 className="fw-bold m-0" style={{ color: styles.primary }}>⚙️ {t('hangarUpdate.title')}</h2>
                     {updateStatus && <span className="badge px-4 py-2" style={{ backgroundColor: styles.primary, borderRadius: '10px' }}>{updateStatus}</span>}
                 </div>
 
                 {/* 1. Sélecteur Hangar */}
                 <div className="card border-0 shadow-sm p-4 mb-5 rounded-4" style={{ borderLeft: `6px solid ${styles.primary}` }}>
-                    <label className="text-muted small fw-bold mb-2">SÉLECTION DU HANGAR À METTRE À JOUR</label>
+                    <label className="text-muted small fw-bold mb-2">{t('hangarUpdate.selectHangar')}</label>
                     <select className="form-select border-0 bg-light py-3 shadow-none fw-bold" value={selectedHangarId || ''} onChange={e => setSelectedHangarId(parseInt(e.target.value))} style={{ borderRadius: '12px' }}>
                         {hangars.map(h => <option key={h.id_hangar} value={h.id_hangar}>{h.nom_hangar}</option>)}
                     </select>
                 </div>
 
                 <HangarTripleEditor 
-                    title="Certifications & Modèles Agréés"
+                    title={t('hangarUpdate.sections.certifications')}
                     avionOptions={allAvionTypes}
                     agreementOptions={filteredAgreements}
                     currentTriples={hangarData.triple_data}
@@ -318,7 +324,7 @@ export default function HangarUpdate() {
                 />
 
                 <RelationEditor 
-                    title="Services Complémentaires"
+                    title={t('hangarUpdate.sections.services')}
                     options={allServices}
                     currentIds={hangarData.service_ids}
                     onUpdate={handleUpdate}
