@@ -9,13 +9,13 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Pages Publiques
 import Home from './pages/Home';
 import Services from './pages/Services';
-import About from './pages/About';
 import Contact from './pages/Contact';
 import Search from './pages/Search'; 
 
 // Pages Authentification
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 
 // Pages Pro (Back Office)
 import ProDashboard from './pages/pro/ProDashboard'; 
@@ -36,14 +36,13 @@ function App() {
           {/* --- ROUTES PUBLIQUES --- */}
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<div className="container py-4"><Services /></div>} />
-          <Route path="/about" element={<div className="container py-4"><About /></div>} />
           <Route path="/contact" element={<div className="container py-4"><Contact /></div>} />
           <Route path="/search" element={<div className="container-fluid py-4"><Search /></div>} /> 
           
           {/* --- AUTHENTIFICATION --- */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           {/* --- NOUVELLE ROUTE : ADMIN DASHBOARD --- */}
           <Route path="/AdminDashboard" element={
             <ProtectedRoute>
