@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
+import { useTranslation } from 'react-i18next';
 
 // Fix pour les icônes Leaflet
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -17,7 +17,7 @@ const DefaultIcon = L.icon({
 });
 
 /**
- * Composant interne pour les étoiles Or (avec support demi-étoiles)
+ * Composant interne pour les étoiles Or
  */
 const AdminStarRating = ({ rating }) => {
   const value = parseFloat(rating) || 0;
@@ -67,9 +67,11 @@ export default function SearchResults({
   selectedModel, 
   selectedService, 
   selectedDate,
-  onViewDetail 
+  onViewDetail,
+  onToggleCompare, // <--- Props Comparateur
+  compareList      // <--- Props Comparateur
 }) {
-  const { t } = useTranslation(); // <--- HOOK
+  const { t } = useTranslation();
   const [activeCoords, setActiveCoords] = useState(null);
 
   if (searchPhase !== 2) return null;
@@ -133,7 +135,6 @@ export default function SearchResults({
         <div className="col-lg-7 px-3 px-lg-4" style={{ maxHeight: '85vh', overflowY: 'auto' }}>
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
             <h4 className="fw-bold m-0" style={{ color: 'var(--color-primary)' }}>
-              {/* Utilisation du pluriel automatique avec 'count' */}
               {t('searchResults.headerCount', { count: searchResults.length })}
             </h4>
             <div className="d-flex flex-wrap gap-2">
@@ -149,17 +150,32 @@ export default function SearchResults({
               const lat = hangar.airports?.lat;
               const lon = hangar.airports?.lon;
               const hasCoords = lat && lon;
-              
               const specMaintenance = hangar.hangar_triple?.[0]?.maintenance_type;
+
+              // --- LOGIQUE DE SÉLECTION ---
+              const isSelected = compareList?.some(item => item.id_hangar === hangar.id_hangar);
+              const isActiveOnMap = activeCoords?.[0] === lat;
+              
+              // Gestion de la couleur de bordure (Priorité : Map > Compare > Rien)
+              // Ici on utilise ta variable CSS accent pour le comparateur
+              let borderColor = 'transparent';
+              
+              if (isActiveOnMap) {
+                  // Optionnel: Garder bleu nuit pour la carte ou utiliser accent
+                  borderColor = 'var(--color-primary)'; 
+              } else if (isSelected) {
+                  // BORDURE TERRE CUITE SI SÉLECTIONNÉ
+                  borderColor = 'var(--color-accent)'; 
+              }
 
               return (
                 <div 
                   key={hangar.id_hangar} 
-                  className="card border-0 shadow-sm transition-hover" 
+                  className={`card shadow-sm transition-hover`} 
                   style={{ 
                     borderRadius: '15px', 
                     cursor: 'pointer',
-                    border: activeCoords?.[0] === lat ? '2px solid var(--color-accent)' : 'none',
+                    border: `2px solid ${borderColor}`,
                     transition: 'all 0.2s ease-in-out',
                     backgroundColor: '#fff'
                   }}
@@ -191,13 +207,38 @@ export default function SearchResults({
                       )}
                     </div>
 
-                    <div className="mt-3 pt-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+                    <div className="mt-3 pt-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
                       <div className="text-success small fw-bold">
                         <span className="me-1">●</span> {t('searchResults.status.approvedStation')}
                       </div>
-                      <div className="d-flex gap-2 w-100 w-sm-auto">
+
+                      <div className="d-flex flex-wrap gap-2 w-100 w-sm-auto justify-content-end align-items-center">
+                        
+                        {/* --- SWITCH COMPARER STYLE CUSTOM --- */}
+                        <div 
+                          className="form-check form-switch me-2" 
+                          onClick={(e) => e.stopPropagation()} 
+                        >
+                          <input 
+                            className="form-check-input" 
+                            type="checkbox" 
+                            role="switch"
+                            id={`compare-${hangar.id_hangar}`}
+                            checked={isSelected}
+                            onChange={() => onToggleCompare(hangar)}
+                            style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
+                          />
+                          <label 
+                            className={`form-check-label small ms-1 ${isSelected ? 'form-check-label-active' : 'text-muted'}`}
+                            htmlFor={`compare-${hangar.id_hangar}`}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            {isSelected ? 'Comparé' : 'Comparer'}
+                          </label>
+                        </div>
+
                         <button 
-                          className="btn btn-outline-secondary btn-sm px-4 flex-grow-1" 
+                          className="btn btn-outline-secondary btn-sm px-3 flex-grow-1 flex-sm-grow-0" 
                           style={{ borderRadius: '20px', fontWeight: '600' }}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -207,7 +248,7 @@ export default function SearchResults({
                           {t('searchResults.buttons.details')}
                         </button>
                         <button 
-                          className="btn btn-accent-pro btn-sm px-4 text-white flex-grow-1 shadow-sm" 
+                          className="btn btn-accent-pro btn-sm px-3 text-white flex-grow-1 flex-sm-grow-0 shadow-sm" 
                           style={{ borderRadius: '20px', fontWeight: '600' }}
                           onClick={(e) => {
                             e.stopPropagation();

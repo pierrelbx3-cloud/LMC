@@ -2,14 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useTranslation } from 'react-i18next'; // <--- IMPORT I18N
 
-/**
- * Variables de style harmonisées
- */
 const styles = {
-    primary: '#1A233A',    // Bleu Nuit
-    secondary: '#4FC3F7',  // Bleu Ciel
-    accent: '#C87569',     // Terre Cuite
-    lightBg: '#f4f7f9',
+    primary: 'var(--color-primary)',
+    secondary: 'var(--color-secondary)',
+    accent: 'var(--color-accent)',
+    lightBg: 'var(--color-light-bg)',
     white: '#ffffff'
 };
 

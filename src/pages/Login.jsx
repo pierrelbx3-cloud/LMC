@@ -67,7 +67,7 @@ export default function Login() {
               <label className="form-label small fw-bold" style={{ color: 'var(--color-primary)' }}>
                 {t('login.passwordLabel')}
               </label>
-              <Link to="/reset-password" alt="Oublié" className="text-decoration-none small opacity-75" style={{ color: 'var(--color-primary)' }}>
+              <Link to="/forgot-password" alt="Oublié" className="text-decoration-none small opacity-75" style={{ color: 'var(--color-primary)' }}>
                 {t('login.forgotPassword')}
               </Link>
             </div>

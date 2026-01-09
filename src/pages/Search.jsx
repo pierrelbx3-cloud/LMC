@@ -5,6 +5,7 @@ import SearchForm from './SearchForm';
 import SearchResults from './SearchResults';
 import ResultDetailModal from './ResultDetailModal'; 
 import QuoteRequestModal from './QuoteRequestModal'; 
+import ComparisonModal from './ComparisonModal'; // <--- NOUVEL IMPORT
 
 export default function SearchComponent() {
   // États de sélection
@@ -23,6 +24,10 @@ export default function SearchComponent() {
   const [showModal, setShowModal] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [selectedHangar, setSelectedHangar] = useState(null);
+
+  // --- ÉTATS POUR LE COMPARATEUR (NOUVEAU) ---
+  const [compareList, setCompareList] = useState([]); 
+  const [showCompareModal, setShowCompareModal] = useState(false);
 
   // Hook pour récupérer les données de filtrage
   const {
@@ -45,6 +50,9 @@ export default function SearchComponent() {
     setSearchPhase(1);
     setShowModal(false);
     setShowQuoteModal(false);
+    // Reset du comparateur
+    setCompareList([]); // <--- NOUVEAU
+    setShowCompareModal(false); // <--- NOUVEAU
   };
 
   const handleOpenModal = (hangar) => {
@@ -57,9 +65,31 @@ export default function SearchComponent() {
     setShowQuoteModal(true);
   };
 
+  // --- LOGIQUE D'AJOUT/RETRAIT DU COMPARATEUR (NOUVEAU) ---
+  const handleToggleCompare = (hangar) => {
+    setCompareList((prev) => {
+      // On vérifie par id_hangar (selon ton schéma DB)
+      const exists = prev.find((p) => p.id_hangar === hangar.id_hangar);
+      
+      if (exists) {
+        // Si déjà présent, on l'enlève
+        return prev.filter((p) => p.id_hangar !== hangar.id_hangar);
+      } else {
+        // Si pas présent, on ajoute (Max 2)
+        if (prev.length < 2) {
+          return [...prev, hangar];
+        } else {
+          alert("Vous ne pouvez comparer que 2 résultats à la fois.");
+          return prev;
+        }
+      }
+    });
+  };
+
   const handleSearch = async (e) => {
     e.preventDefault();
     setLocalLoading(true);
+    setCompareList([]); // <--- On vide le comparateur à chaque nouvelle recherche
 
     const typeAvionId = modelsRaw.find(
       m => m.model_avion === selectedModel &&
@@ -75,13 +105,9 @@ export default function SearchComponent() {
 
     try {
       let finalData = [];
-
-      // Si un service est sélectionné, on passe directement en logique Phase 2, peu importe l'état précédent
       const isServiceSearch = selectedService !== '' || searchPhase === 2;
 
       if (!isServiceSearch) {
-        // --- PHASE 1 : Recherche par Type Avion uniquement ---
-        // CORRECTION ICI : Retrait des majuscules et guillemets pour adresse, zip_code, phone
         const { data, error: err } = await supabase
           .from('hangars')
           .select(`
@@ -94,13 +120,10 @@ export default function SearchComponent() {
 
         if (err) throw err;
         finalData = data;
-        setSearchPhase(2); // On prépare la prochaine étape
+        setSearchPhase(2);
 
       } else {
-        // --- PHASE 2 : Filtre supplémentaire par Service ---
         const serviceObj = services.find(s => s.name === selectedService);
-        
-        // Sécurité : si le service n'est pas trouvé (bug UI), on évite de planter la requête
         const serviceId = serviceObj ? serviceObj.id : null;
 
         let query = supabase
@@ -114,7 +137,6 @@ export default function SearchComponent() {
           `)
           .eq('hangar_triple.id_type', typeAvionId);
 
-        // On n'applique le filtre service que si on a un ID valide
         if (serviceId) {
             query = query.eq('hangar_service.id_service', serviceId);
         }
@@ -127,7 +149,6 @@ export default function SearchComponent() {
 
       setSearchResults(finalData);
 
-      // --- LOGS DE RECHERCHE ---
       await supabase.from('search_logs').insert([{
         category: selectedCategory,
         tc_holder: selectedTcHolder,
@@ -147,7 +168,7 @@ export default function SearchComponent() {
   const currentTypeId = modelsRaw.find(m => m.model_avion === selectedModel)?.id_type;
 
   return (
-    <div className="container-fluid py-5 px-lg-5">
+    <div className="container-fluid py-5 px-lg-5 position-relative"> {/* Ajout position-relative */}
       {error && <div className="alert alert-danger shadow-sm border-0">{error}</div>}
       
       <SearchForm
@@ -172,6 +193,7 @@ export default function SearchComponent() {
         searchResults={searchResults}
       />
 
+      {/* --- MODIFICATION ICI : PASSAGE DES PROPS DE COMPARAISON --- */}
       <SearchResults
         searchPhase={searchPhase}
         searchResults={searchResults}
@@ -179,8 +201,26 @@ export default function SearchComponent() {
         selectedService={selectedService}
         selectedDate={selectedDate}
         onViewDetail={handleOpenModal}
+        // NOUVEAU :
+        onToggleCompare={handleToggleCompare}
+        compareList={compareList}
       />
 
+      {/* --- BOUTON FLOTTANT (Apparaît si sélection > 0) --- */}
+      {compareList.length > 0 && (
+         <div className="position-fixed bottom-0 start-50 translate-middle-x mb-4" style={{ zIndex: 1060 }}>
+            <button 
+              className="btn btn-accent-pro text-white rounded-pill px-4 py-2 shadow-lg animate__animated animate__fadeInUp"
+              onClick={() => setShowCompareModal(true)}
+              disabled={compareList.length < 2} // Optionnel : désactiver tant qu'on a pas 2 items
+            >
+              <i className="bi bi-arrow-left-right me-2"></i>
+              Comparateur ({compareList.length}/2)
+            </button>
+         </div>
+      )}
+
+      {/* --- MODALES --- */}
       <ResultDetailModal 
         show={showModal} 
         onClose={() => setShowModal(false)} 
@@ -194,6 +234,14 @@ export default function SearchComponent() {
         onClose={() => setShowQuoteModal(false)}
         hangar={selectedHangar}
         selectedModel={selectedModel}
+      />
+
+      {/* NOUVEAU : LA MODALE DE COMPARAISON */}
+      <ComparisonModal 
+        show={showCompareModal}
+        onClose={() => setShowCompareModal(false)}
+        items={compareList}
+        selectedTypeId={currentTypeId}
       />
     </div>
   );
